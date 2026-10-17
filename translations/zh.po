@@ -1,4 +1,4 @@
-msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "可乐"
 
@@ -15,8 +15,8 @@ msgid "A machine that blends liquids, gases and spices in exact proportions."
 msgstr "一台把液体、气体和香料按比例混合的机器。"
 
 msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.EFFECT"
-msgid "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola."
-msgstr "将水、二氧化碳和火椒粒调配成可乐。"
+msgid "Blends ingredients into assorted beverages."
+msgstr "将原料调配成各种饮品。"
 
 msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKCOLA.NAME"
 msgid "Drank Cola"
@@ -31,5 +31,29 @@ msgid "Cola"
 msgstr "可乐"
 
 msgctxt "STRINGS.UI.BEVERAGEMIXER.RECIPE_DESC"
-msgid "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola."
-msgstr "水、二氧化碳和火椒粒在高压下融合成一杯可乐。"
+msgid "Water, Carbon Dioxide, Sucrose and Pincha Peppernut, fused under pressure into a glass of Cola."
+msgstr "水、二氧化碳、蔗糖和火椒粒在高压下融合成一杯可乐。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.NAME"
+msgid "Super Capacitor Bank"
+msgstr "超级电容库"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.DESC"
+msgid "A rack of high-density supercapacitors. It holds far more charge than an ordinary battery and keeps a grid running long after the generators stop."
+msgstr "一组高密度超级电容。储电量远超普通电池，即使发电机停摆，也能让电网继续运转很久。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.EFFECT"
+msgid "Stores up to <b>800 kJ</b> of Power.\n\nLeaks 50 J per second to internal resistance and emits 50 DTU/s of Heat.\n\nSends a Green Signal when its charge rises above the activation threshold."
+msgstr "最多储存 <b>800 千焦</b>电力。\n\n因内阻每秒泄漏 50 焦耳，并产生 50 复制热/秒。\n\n电量高于启动阈值时输出绿色信号。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT"
+msgid "Battery Charge"
+msgstr "电池电量"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT_ACTIVE"
+msgid "Sends a <b><style=\"logic_on\">Green Signal</style></b> when the charge rises above the activation threshold"
+msgstr "电量高于启动阈值时输出<b><style=\"logic_on\">绿色信号</style></b>"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT_INACTIVE"
+msgid "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold"
+msgstr "电量低于停止阈值时输出<b><style=\"logic_off\">红色信号</style></b>"

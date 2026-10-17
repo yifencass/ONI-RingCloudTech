@@ -1,4 +1,4 @@
-msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "Cola"
 
@@ -15,8 +15,8 @@ msgid "A machine that blends liquids, gases and spices in exact proportions."
 msgstr "A machine that blends liquids, gases and spices in exact proportions."
 
 msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.EFFECT"
-msgid "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola."
-msgstr "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola."
+msgid "Blends ingredients into assorted beverages."
+msgstr "Blends ingredients into assorted beverages."
 
 msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKCOLA.NAME"
 msgid "Drank Cola"
@@ -31,5 +31,29 @@ msgid "Cola"
 msgstr "Cola"
 
 msgctxt "STRINGS.UI.BEVERAGEMIXER.RECIPE_DESC"
-msgid "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola."
-msgstr "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola."
+msgid "Water, Carbon Dioxide, Sucrose and Pincha Peppernut, fused under pressure into a glass of Cola."
+msgstr "Water, Carbon Dioxide, Sucrose and Pincha Peppernut, fused under pressure into a glass of Cola."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.NAME"
+msgid "Super Capacitor Bank"
+msgstr "Super Capacitor Bank"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.DESC"
+msgid "A rack of high-density supercapacitors. It holds far more charge than an ordinary battery and keeps a grid running long after the generators stop."
+msgstr "A rack of high-density supercapacitors. It holds far more charge than an ordinary battery and keeps a grid running long after the generators stop."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.EFFECT"
+msgid "Stores up to <b>800 kJ</b> of Power.\n\nLeaks 50 J per second to internal resistance and emits 50 DTU/s of Heat.\n\nSends a Green Signal when its charge rises above the activation threshold."
+msgstr "Stores up to <b>800 kJ</b> of Power.\n\nLeaks 50 J per second to internal resistance and emits 50 DTU/s of Heat.\n\nSends a Green Signal when its charge rises above the activation threshold."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT"
+msgid "Battery Charge"
+msgstr "Battery Charge"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT_ACTIVE"
+msgid "Sends a <b><style=\"logic_on\">Green Signal</style></b> when the charge rises above the activation threshold"
+msgstr "Sends a <b><style=\"logic_on\">Green Signal</style></b> when the charge rises above the activation threshold"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT_INACTIVE"
+msgid "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold"
+msgstr "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold"

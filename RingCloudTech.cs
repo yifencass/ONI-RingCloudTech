@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using KMod;
 using Klei.AI;
@@ -25,6 +26,19 @@ namespace RingCloudTech
             {
                 Debug.LogError("[RingCloudTech] 注册建造菜单失败: " + e);
             }
+
+            try
+            {
+                // 放进电力 → 电池子类
+                ModUtil.AddBuildingToPlanScreen("Power", SuperCapacitorConfig.ID, "batteries");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[RingCloudTech] 注册超级电容库到建造菜单失败: " + e);
+            }
+
+
+
             Debug.Log("[RingCloudTech] 环云科技已加载");
         }
     }
@@ -121,6 +135,90 @@ namespace RingCloudTech
 
             try { UnlockBeverageMixer(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 解锁建筑失败: " + e); }
+
+            try { UnlockSuperCapacitor(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 解锁超级电容库失败: " + e); }
+
+            try { RepairMissingSubstanceAnims(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 修复缺失液滴动画失败: " + e); }
+        }
+
+        // Substance.anims 是 internal KAnimFile[]，由 SubstanceTable.BindAnimList()
+        // 从 Substance.anim 自动填充一次。
+        // 但「加载之后再设置 anim」的元素（比如我们的 Cola，以及其它 mod 用 YAML 加的元素）
+        // 会漏掉这一步，anims 保持 null。
+        // 后果：空瓶器 BottleEmptier.StartMeter() 里 SwapAnims(substance.anims) 直接 NRE。
+        // 这里在 Db.Initialize 之后统一补一遍。
+        private static readonly FieldInfo SubstanceAnimsField =
+            typeof(Substance).GetField("anims", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        private static KAnimFile[] GetSubstanceAnims(Substance s)
+        {
+            return SubstanceAnimsField?.GetValue(s) as KAnimFile[];
+        }
+
+        private static void SetSubstanceAnims(Substance s, KAnimFile[] value)
+        {
+            SubstanceAnimsField?.SetValue(s, value);
+        }
+
+        private static void RepairMissingSubstanceAnims()
+        {
+            if (SubstanceAnimsField == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 找不到 Substance.anims 字段，跳过修复");
+                return;
+            }
+
+            // 同状态的模板元素（原版一定有液滴动画）。
+            // 这里只是「借一份能用的动画数组」，不针对任何具体元素或 mod。
+            Element gasDonor = ElementLoader.FindElementByHash(SimHashes.Hydrogen);
+            Element liquidDonor = ElementLoader.FindElementByHash(SimHashes.Water);
+
+            int fixedWithOwn = 0, fixedWithTemplate = 0, stillBroken = 0;
+
+            foreach (Element el in ElementLoader.elements)
+            {
+                Substance sub = el?.substance;
+                if (sub == null) continue;
+
+                // 只处理流体。固体的液滴动画本来就可能为空，空瓶器也不会碰它。
+                if (!el.IsGas && !el.IsLiquid) continue;
+
+                // 已经正常的元素一律不动
+                if (GetSubstanceAnims(sub) != null) continue;
+
+                // 情况 1：自己就有动画，只是没被 BindAnimList 绑上
+                //         （典型：加载之后才设置 anim 的元素）
+                if (sub.anim != null)
+                {
+                    SetSubstanceAnims(sub, new KAnimFile[] { sub.anim });
+                    fixedWithOwn++;
+                    continue;
+                }
+
+                // 情况 2：连 anim 都没有
+                //         （典型：用 YAML 加元素、没写 substance 动画）
+                //         借同状态原版元素的液滴动画
+                Element donor = el.IsGas ? gasDonor : liquidDonor;
+                KAnimFile[] template = GetSubstanceAnims(donor?.substance);
+                if (template == null)
+                {
+                    stillBroken++;
+                    continue;
+                }
+
+                sub.anim = donor.substance.anim;
+                SetSubstanceAnims(sub, template);
+                fixedWithTemplate++;
+            }
+
+            if (fixedWithOwn + fixedWithTemplate + stillBroken > 0)
+            {
+                Debug.Log(string.Format(
+                    "[RingCloudTech] 液滴动画补齐: 自有动画 {0} 个, 借用模板 {1} 个, 仍缺失 {2} 个",
+                    fixedWithOwn, fixedWithTemplate, stillBroken));
+            }
         }
 
         private static void CustomizeColaElement()
@@ -193,6 +291,27 @@ namespace RingCloudTech
             if (!tech.unlockedItemIDs.Contains(BeverageMixerConfig.ID))
             {
                 tech.AddUnlockedItemIDs(BeverageMixerConfig.ID);
+            }
+        }
+
+        private static void UnlockSuperCapacitor()
+        {
+            // 大容量储能，放在电力规整的进阶科技
+            Tech tech = Db.Get().Techs.Get("AdvancedPowerRegulation");
+            if (tech == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 找不到 AdvancedPowerRegulation 科技");
+                return;
+            }
+            AddUnlock(tech, SuperCapacitorConfig.ID);
+
+        }
+
+        private static void AddUnlock(Tech tech, string id)
+        {
+            if (!tech.unlockedItemIDs.Contains(id))
+            {
+                tech.AddUnlockedItemIDs(id);
             }
         }
     }

@@ -29,7 +29,21 @@ namespace RingCloudTech
                     public static LocString DESC =
                         "A machine that blends liquids, gases and spices in exact proportions.";
                     public static LocString EFFECT =
-                        "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola.";
+                        "Blends ingredients into assorted beverages.";
+                }
+
+                public static class SUPERCAPACITOR
+                {
+                    public static LocString NAME = "Super Capacitor Bank";
+                    public static LocString DESC =
+                        "A rack of high-density supercapacitors. It holds far more charge than an ordinary battery and keeps a grid running long after the generators stop.";
+                    public static LocString EFFECT =
+                        "Stores up to <b>800 kJ</b> of Power.\n\nLeaks 50 J per second to internal resistance and emits 50 DTU/s of Heat.\n\nSends a Green Signal when its charge rises above the activation threshold.";
+                    public static LocString LOGIC_PORT = "Battery Charge";
+                    public static LocString LOGIC_PORT_ACTIVE =
+                        "Sends a <b><style=\"logic_on\">Green Signal</style></b> when the charge rises above the activation threshold";
+                    public static LocString LOGIC_PORT_INACTIVE =
+                        "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold";
                 }
             }
         }
@@ -53,7 +67,7 @@ namespace RingCloudTech
             {
                 public static LocString RECIPE_NAME = "Cola";
                 public static LocString RECIPE_DESC =
-                    "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola.";
+                    "Water, Carbon Dioxide, Sucrose and Pincha Peppernut, fused under pressure into a glass of Cola.";
             }
         }
     }

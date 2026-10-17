@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using STRINGS;
 using TUNING;
@@ -65,11 +65,32 @@ namespace RingCloudTech
         public const string ID = "BeverageMixer";
 
         // 配方比例（每批）
-        public const float WATER_MASS = 90.91f;
+        // 每批输入合计必须等于 COLA_MASS，否则会凭空造/灭质量
+        //   水 80.00 + 二氧化碳 4.55 + 火椒粒 0.91 + 蔗糖 14.54 = 100.00
+        public const float WATER_MASS = 80f;
         public const float CO2_MASS = 4.55f;
-        public const float SPICE_MASS = 4.55f;
+        public const float SPICE_MASS = 0.91f;     // 原 4.55 降到 1/5
+        public const float SUCROSE_MASS = 14.54f;
         public const float COLA_MASS = 100f;
-        public const float RECIPE_TIME = 100f;
+
+        // ───── 配方时间 ─────
+        // 本体复用 sodamaker_kanim，ComplexFabricator 的动画时序是：
+        //   working_pre(播一次) → working_loop(循环) → 工作结束切 working_pst
+        // 所以配方时间必须是「前摇 + 整数个循环」，
+        // 否则工作会在循环播到一半时结束，动画被硬切，看着像卡了一下。
+        //   working_pre  = 131 帧
+        //   working_loop =  64 帧
+        //   帧率 = 30 fps                          （数据来自 ANIM v5）
+        private const int ANIM_PRE_FRAMES = 131;
+        private const int ANIM_LOOP_FRAMES = 64;
+        private const float ANIM_FPS = 30f;
+
+        // 循环次数：45 → 100.3667 秒，接近原来的 100 秒
+        // 换成 12 → 29.9667 秒，正好是原版汽水机 SetWorkTime(30f) 的节奏
+        private const int LOOP_COUNT = 45;
+
+        public const float RECIPE_TIME =
+            (ANIM_PRE_FRAMES + LOOP_COUNT * ANIM_LOOP_FRAMES) / ANIM_FPS;
 
         public override BuildingDef CreateBuildingDef()
         {
@@ -162,6 +183,15 @@ namespace RingCloudTech
             spice.MinimumMass = SPICE_MASS;
             spice.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
 
+            // 蔗糖搬运（本体资源 SimHashes.Sucrose，甜盒虫/甜盒树产线）
+            ManualDeliveryKG sucrose = go.AddComponent<ManualDeliveryKG>();
+            sucrose.SetStorage(fabricator.inStorage);
+            sucrose.RequestedItemTag = SimHashes.Sucrose.CreateTag();
+            sucrose.capacity = 100f;
+            sucrose.refillMass = 30f;
+            sucrose.MinimumMass = SUCROSE_MASS;
+            sucrose.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
+
             ConfigureRecipes();
             Prioritizable.AddRef(go);
         }
@@ -178,12 +208,14 @@ namespace RingCloudTech
             Tag waterTag = ElementLoader.FindElementByHash(SimHashes.Water).tag;
             Tag co2Tag = SimHashes.CarbonDioxide.CreateTag();
             Tag spiceTag = new Tag("SpiceNut");
+            Tag sucroseTag = SimHashes.Sucrose.CreateTag();
 
             ComplexRecipe.RecipeElement[] inputs =
             {
                 new ComplexRecipe.RecipeElement(waterTag, WATER_MASS),
                 new ComplexRecipe.RecipeElement(co2Tag, CO2_MASS),
                 new ComplexRecipe.RecipeElement(spiceTag, SPICE_MASS),
+                new ComplexRecipe.RecipeElement(sucroseTag, SUCROSE_MASS),
             };
 
             // 产物是纯元素，必须用 Melted：

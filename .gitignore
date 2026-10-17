@@ -1,4 +1,4 @@
-# 构建产物
+﻿# 构建产物
 bin/
 obj/
 *.dll
@@ -19,3 +19,12 @@ obj/
 # 系统
 Thumbs.db
 .DS_Store
+
+# 本地素材工作区（Klei 版权素材，不入库）
+_assets/
+
+# 废弃方案存档（仅本地，不上传）
+_archive/
+
+# 浏览器版 KAnim 编辑器（未完成，暂不入库）
+sp_editor/
