@@ -4,6 +4,8 @@
 
 > RingCloudTech — a content mod for Oxygen Not Included.
 
+环云科技将会长期进行更新。因为技术力所限，本项目依然会使用 AI 辅助开发。
+
 ## 当前内容
 
 - **可乐（Cola）** —— 自定义液体元素，相变参数与体温对照原版水编写。
