@@ -113,6 +113,12 @@ msgstr "可乐"
 - 所有来自《缺氧》的贴图、动画与代码，版权归 **Klei Entertainment** 所有。本模组仅通过游戏内既有资源引用，未重新分发任何 Klei 资产。
 - 模组中复用的原版建筑贴图（汽水机 `sodamaker_kanim`）同理属于 Klei。
 
+## 感谢
+
+- **[ChiYuKe/ONIModTutorial](https://github.com/ChiYuKe/ONIModTutorial)** —— 《缺氧》Mod 开发笔记与教程。本项目的元素 `Substance` 补齐、`ComplexRecipe` 配方写法、`LocString` 本地化流程等多处实现，都参考了这份资料，省下大量逆向摸索的时间。
+- **Klei Entertainment** —— 创造了《缺氧》以及开放的 Mod 接口。
+- 以及所有在开发过程中提供反馈、帮忙测试的人。
+
 ## 关于 RingCloud
 
 这事实上是个虚拟代称。因为有时能收到其他人的帮助，所以在制作方上习惯以完全虚构的创作团队——**环云制作组**自居。
