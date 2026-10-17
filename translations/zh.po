@@ -1,0 +1,35 @@
+msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+msgid "Cola"
+msgstr "可乐"
+
+msgctxt "STRINGS.ELEMENTS.COLA.DESC"
+msgid "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through."
+msgstr "一种甜辣的碳酸饮料，火椒和蔗糖的完美作用能极大地暖心！"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.NAME"
+msgid "Beverage Mixer"
+msgstr "饮料调配机"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.DESC"
+msgid "A machine that blends liquids, gases and spices in exact proportions."
+msgstr "一台把液体、气体和香料按比例混合的机器。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.EFFECT"
+msgid "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola."
+msgstr "将水、二氧化碳和火椒粒调配成可乐。"
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKCOLA.NAME"
+msgid "Drank Cola"
+msgstr "喝了可乐"
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKCOLA.TOOLTIP"
+msgid "A chilled glass of Cola. Stress melts away, spirits lift."
+msgstr "一杯冰镇可乐，压力消散，精神百倍。"
+
+msgctxt "STRINGS.UI.BEVERAGEMIXER.RECIPE_NAME"
+msgid "Cola"
+msgstr "可乐"
+
+msgctxt "STRINGS.UI.BEVERAGEMIXER.RECIPE_DESC"
+msgid "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola."
+msgstr "水、二氧化碳和火椒粒在高压下融合成一杯可乐。"

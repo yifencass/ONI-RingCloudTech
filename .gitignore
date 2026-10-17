@@ -1,0 +1,21 @@
+# 构建产物
+bin/
+obj/
+*.dll
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+*.sln
+
+# 本地部署辅助脚本（含机器相关路径）
+部署修复.bat
+
+# 系统
+Thumbs.db
+.DS_Store

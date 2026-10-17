@@ -1,0 +1,35 @@
+msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+msgid "Cola"
+msgstr "Cola"
+
+msgctxt "STRINGS.ELEMENTS.COLA.DESC"
+msgid "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through."
+msgstr "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.NAME"
+msgid "Beverage Mixer"
+msgstr "Beverage Mixer"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.DESC"
+msgid "A machine that blends liquids, gases and spices in exact proportions."
+msgstr "A machine that blends liquids, gases and spices in exact proportions."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.EFFECT"
+msgid "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola."
+msgstr "Combines Water, Carbon Dioxide and Pincha Peppernut into Cola."
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKCOLA.NAME"
+msgid "Drank Cola"
+msgstr "Drank Cola"
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKCOLA.TOOLTIP"
+msgid "A chilled glass of Cola. Stress melts away, spirits lift."
+msgstr "A chilled glass of Cola. Stress melts away, spirits lift."
+
+msgctxt "STRINGS.UI.BEVERAGEMIXER.RECIPE_NAME"
+msgid "Cola"
+msgstr "Cola"
+
+msgctxt "STRINGS.UI.BEVERAGEMIXER.RECIPE_DESC"
+msgid "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola."
+msgstr "Water, Carbon Dioxide and Pincha Peppernut, fused under pressure into a glass of Cola."
