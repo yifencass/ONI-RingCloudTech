@@ -22,24 +22,44 @@
 
 ## 安装
 
-1. 从 Releases 下载，或自行编译（见下）。
-2. 把整个目录放到：
-   ```
-   文档\Klei\OxygenNotIncluded\mods\Local\RingCloudTech
-   ```
-   （即 `%USERPROFILE%\Documents\Klei\OxygenNotIncluded\mods\Local\RingCloudTech`）
-3. 目录结构应如下，`RingCloudTech.dll` 必须与 `elements/`、`translations/` 同级：
-   ```
-   RingCloudTech/
-   ├── RingCloudTech.dll
-   ├── mod.yaml
-   ├── mod_info.yaml
-   ├── elements/
-   │   └── cola.yaml
-   └── translations/
-       ├── zh.po
-       └── en.po
-   ```
+有两条路，按需求选：
+
+| 渠道 | 稳定性 | 说明 |
+|---|---|---|
+| **Steam 创意工坊** | 稳定版 | 尚未发布，敬请期待 |
+| **本仓库（自行编译）** | 测试版 | 包含最新改动，**不保证稳定**，适合想尝鲜或帮忙测试的人 |
+
+### 通过本仓库安装（测试版）
+
+clone 仓库并自行编译，这样拿到的是最新代码，可能带有未经充分验证的改动：
+
+```bash
+git clone https://github.com/yifencass/ONI-RingCloudTech.git
+cd ONI-RingCloudTech
+dotnet build -c Release
+```
+
+然后把编译产物和资源按下面的结构放到 mod 目录：
+
+```
+文档\Klei\OxygenNotIncluded\mods\Local\RingCloudTech
+```
+
+（即 `%USERPROFILE%\Documents\Klei\OxygenNotIncluded\mods\Local\RingCloudTech`）
+
+目录结构应如下，`RingCloudTech.dll` 必须与 `elements/`、`translations/` 同级：
+
+```
+RingCloudTech/
+├── RingCloudTech.dll
+├── mod.yaml
+├── mod_info.yaml
+├── elements/
+│   └── cola.yaml
+└── translations/
+    ├── zh.po
+    └── en.po
+```
 
 ## 构建
 
