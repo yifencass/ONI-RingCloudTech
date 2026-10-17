@@ -10,12 +10,22 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin</OutputPath>
     <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
-    <!-- 关掉一堆只对可执行项目有意义的检查 -->
     <NoWarn>CS0436</NoWarn>
   </PropertyGroup>
 
+  <!--
+    游戏 Managed 目录。
+
+    优先顺序：
+      1. 环境变量 ONI_MANAGED_PATH
+      2. 命令行参数 -p:ManagedPath="..."
+      3. 下面的默认 Steam 安装路径
+
+    如果游戏不在默认位置，用前两种方式之一指定即可。
+  -->
   <PropertyGroup>
-    <ManagedPath>D:\SteamLibrary\steamapps\common\OxygenNotIncluded\OxygenNotIncluded_Data\Managed</ManagedPath>
+    <ManagedPath Condition="'$(ONI_MANAGED_PATH)' != ''">$(ONI_MANAGED_PATH)</ManagedPath>
+    <ManagedPath Condition="'$(ManagedPath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\OxygenNotIncluded\OxygenNotIncluded_Data\Managed</ManagedPath>
   </PropertyGroup>
 
   <ItemGroup>
