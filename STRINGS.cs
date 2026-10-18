@@ -1,4 +1,4 @@
-namespace RingCloudTech
+﻿namespace RingCloudTech
 {
     /// <summary>
     /// 所有可翻译文本。默认值为英文，中文由 translations/zh.po 覆盖。
@@ -32,13 +32,22 @@ namespace RingCloudTech
                         "Blends ingredients into assorted beverages.";
                 }
 
+                public static class HARMONYEYE
+                {
+                    public static LocString NAME = "Eye of Harmony";
+                    public static LocString DESC =
+                        "A ring of unknown alloy suspended around a sphere of absolute darkness. The sphere only exists while the device is running.";
+                    public static LocString EFFECT =
+                        "A monument to something that watched the colony before it existed.\n\nOnly the machine's frame is built. Whatever sits at its centre is not built, merely <b>allowed</b>.";
+                }
+
                 public static class SUPERCAPACITOR
                 {
                     public static LocString NAME = "Super Capacitor Bank";
                     public static LocString DESC =
                         "A rack of high-density supercapacitors. It holds far more charge than an ordinary battery and keeps a grid running long after the generators stop.";
                     public static LocString EFFECT =
-                        "Stores up to <b>800 kJ</b> of Power.\n\nLeaks 50 J per second to internal resistance and emits 50 DTU/s of Heat.\n\nSends a Green Signal when its charge rises above the activation threshold.";
+                        "Stores up to <b>800 kJ</b> of Power.\n\nLeaks 60 J per cycle to internal resistance and emits 50 DTU/s of Heat.\n\nSends a Green Signal when its charge rises above the activation threshold.";
                     public static LocString LOGIC_PORT = "Battery Charge";
                     public static LocString LOGIC_PORT_ACTIVE =
                         "Sends a <b><style=\"logic_on\">Green Signal</style></b> when the charge rises above the activation threshold";
@@ -63,6 +72,13 @@ namespace RingCloudTech
 
         public static class UI
         {
+            public static class HARMONYEYE
+            {
+                public static LocString RECIPE_NAME = "Molten Iron";
+                public static LocString RECIPE_DESC =
+                    "One kilogram of Hydrogen, unmade and remade as one hundred kilograms of molten iron.";
+            }
+
             public static class BEVERAGEMIXER
             {
                 public static LocString RECIPE_NAME = "Cola";

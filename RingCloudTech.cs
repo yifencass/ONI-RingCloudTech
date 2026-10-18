@@ -31,6 +31,7 @@ namespace RingCloudTech
             {
                 // 放进电力 → 电池子类
                 ModUtil.AddBuildingToPlanScreen("Power", SuperCapacitorConfig.ID, "batteries");
+            ModUtil.AddBuildingToPlanScreen("Base", HarmonyEyeConfig.ID, "misc");
             }
             catch (Exception e)
             {
@@ -304,6 +305,7 @@ namespace RingCloudTech
                 return;
             }
             AddUnlock(tech, SuperCapacitorConfig.ID);
+            AddUnlock(tech, HarmonyEyeConfig.ID);
 
         }
 

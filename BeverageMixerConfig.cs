@@ -85,12 +85,13 @@ namespace RingCloudTech
         private const int ANIM_LOOP_FRAMES = 64;
         private const float ANIM_FPS = 30f;
 
-        // 循环次数：45 → 100.3667 秒，接近原来的 100 秒
-        // 换成 12 → 29.9667 秒，正好是原版汽水机 SetWorkTime(30f) 的节奏
-        private const int LOOP_COUNT = 45;
-
-        public const float RECIPE_TIME =
-            (ANIM_PRE_FRAMES + LOOP_COUNT * ANIM_LOOP_FRAMES) / ANIM_FPS;
+        // 按要求直接定 8 秒。
+        // 注意：8 秒不等于「前摇 + 整数个循环」，工作会在 working_loop 播到中途时结束，
+        // 动画会硬切回 working_pst。想要对齐的话，最近的几个档位是：
+        //   k=1 → 195/30 = 6.5000 秒
+        //   k=2 → 259/30 = 8.6333 秒
+        // 把 RECIPE_TIME 换成 (ANIM_PRE_FRAMES + k * ANIM_LOOP_FRAMES) / ANIM_FPS 即可。
+        public const float RECIPE_TIME = 8f;
 
         public override BuildingDef CreateBuildingDef()
         {

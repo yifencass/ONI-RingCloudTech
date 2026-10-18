@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using STRINGS;
 using TUNING;
 using UnityEngine;
@@ -22,8 +22,14 @@ namespace RingCloudTech
         /// <summary>容量 800 kJ（Battery.capacity 单位是焦耳）。</summary>
         public const float CAPACITY = 800000f;
 
-        /// <summary>泄漏 50 J/s（Battery.EnergySim200ms 里按秒扣）。</summary>
-        public const float JOULES_LOST_PER_SECOND = 50f;
+        /// <summary>
+        /// 泄漏：游戏内按周期显示，Battery 的说明描述用的是
+        /// GameUtil.TimeSlice.PerCycle，换算系数 600（一个周期 600 秒）。
+        /// 要求「每周期漏 60 焦耳」，所以：
+        ///     60 J/周期 ÷ 600 = 0.1 J/s
+        /// 填 0.1 时游戏会显示成「60.0 焦耳/周期」。
+        /// </summary>
+        public const float JOULES_LOST_PER_SECOND = 0.1f;
 
         // ───── 建筑 ─────
         public const float CONSTRUCTION_TIME = 60f;
@@ -53,10 +59,11 @@ namespace RingCloudTech
         private static readonly CellOffset LogicPortOffset = new CellOffset(2, 0);
 
         /// <summary>
-        /// 占位外观：复用原版智能电池的动画。
-        /// 换成自制贴图时改这里，并把对应的 kanim 打包进 mod。
+        /// 自制外观（4×3 电容柜）。
+        /// 由 sp_editor/src/make_supercap_kanim.py 生成，
+        /// 自带 Battery 需要的 meter / logicmeter 符号与动画。
         /// </summary>
-        private const string ANIM = "smartbattery_kanim";
+        private const string ANIM = "supercapacitor_kanim";
 
         public override BuildingDef CreateBuildingDef()
         {
