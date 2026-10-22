@@ -57,3 +57,43 @@ msgstr "Sends a <b><style=\"logic_on\">Green Signal</style></b> when the charge 
 msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT_INACTIVE"
 msgid "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold"
 msgstr "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SWEETCANE.NAME"
+msgid "Sweet Cane"
+msgstr "Sweet Cane"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SWEETCANE.DESC"
+msgid "A variant of Salty Sticks, with sucrose crystals growing along its stalk. Duplicants adore eating it, but the osmotic pressure from all that sugar leaves them thirsty."
+msgstr "A variant of Salty Sticks, with sucrose crystals growing along its stalk. Duplicants adore eating it, but the osmotic pressure from all that sugar leaves them thirsty."
+
+msgctxt "STRINGS.CREATURES.SPECIES.SWEETCANE.DOMESTICATEDDESC"
+msgid "This plant has been domesticated and needs irrigation to grow."
+msgstr "This plant has been domesticated and needs irrigation to grow."
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.SWEETCANE.NAME"
+msgid "Sweet Cane Seed"
+msgstr "Sweet Cane Seed"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.SWEETCANE.DESC"
+msgid "The seed of a Sweet Cane. Plant it to harvest Sweet Cane."
+msgstr "The seed of a Sweet Cane. Plant it to harvest Sweet Cane."
+
+msgctxt "STRINGS.ITEMS.FOOD.SWEETCANE.NAME"
+msgid "Sweet Cane"
+msgstr "Sweet Cane"
+
+msgctxt "STRINGS.ITEMS.FOOD.SWEETCANE.DESC"
+msgid "A variant of Salty Sticks, its stalk studded with crystallised sucrose. Duplicants love it, but it leaves them thirsty."
+msgstr "A variant of Salty Sticks, its stalk studded with crystallised sucrose. Duplicants love it, but it leaves them thirsty."
+
+msgctxt "STRINGS.CODEX.SWEETCANE.TITLE"
+msgid "Sweet Cane"
+msgstr "Sweet Cane"
+
+msgctxt "STRINGS.CODEX.SWEETCANE.SUBTITLE"
+msgid "A variant of Salty Sticks"
+msgstr "A variant of Salty Sticks"
+
+msgctxt "STRINGS.CODEX.SWEETCANE.BODY.CONTAINER1"
+msgid "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised sucrose, formed naturally as sugar accumulates between the fibres.\n\nDuplicants are very fond of eating Sweet Cane.\n\nBut Sweet Cane contains far too much sugar, and the osmotic pressure it brings leaves whoever eats it thirsty."
+msgstr "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised sucrose, formed naturally as sugar accumulates between the fibres.\n\nDuplicants are very fond of eating Sweet Cane.\n\nBut Sweet Cane contains far too much sugar, and the osmotic pressure it brings leaves whoever eats it thirsty."

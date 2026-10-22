@@ -57,3 +57,43 @@ msgstr "电量高于启动阈值时输出<b><style=\"logic_on\">绿色信号</st
 msgctxt "STRINGS.BUILDINGS.PREFABS.SUPERCAPACITOR.LOGIC_PORT_INACTIVE"
 msgid "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold"
 msgstr "电量低于停止阈值时输出<b><style=\"logic_off\">红色信号</style></b>"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SWEETCANE.NAME"
+msgid "Sweet Cane"
+msgstr "甜蔗"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SWEETCANE.DESC"
+msgid "A variant of Salty Sticks, with sucrose crystals growing along its stalk. Duplicants adore eating it, but the osmotic pressure from all that sugar leaves them thirsty."
+msgstr "咸蔗的变种，茎秆上析出蔗糖晶体。复制人很喜欢吃，但糖分带来的渗透压会导致口渴。"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SWEETCANE.DOMESTICATEDDESC"
+msgid "This plant has been domesticated and needs irrigation to grow."
+msgstr "这种植物经过驯化，需要灌溉才能生长。"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.SWEETCANE.NAME"
+msgid "Sweet Cane Seed"
+msgstr "甜蔗种子"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.SWEETCANE.DESC"
+msgid "The seed of a Sweet Cane. Plant it to harvest Sweet Cane."
+msgstr "甜蔗的种子。种下后可以收获甜蔗。"
+
+msgctxt "STRINGS.ITEMS.FOOD.SWEETCANE.NAME"
+msgid "Sweet Cane"
+msgstr "甜蔗"
+
+msgctxt "STRINGS.ITEMS.FOOD.SWEETCANE.DESC"
+msgid "A variant of Salty Sticks, its stalk studded with crystallised sucrose. Duplicants love it, but it leaves them thirsty."
+msgstr "咸蔗的变种，茎秆上结着析出的蔗糖晶体。复制人很爱吃，但吃完会口渴。"
+
+msgctxt "STRINGS.CODEX.SWEETCANE.TITLE"
+msgid "Sweet Cane"
+msgstr "甜蔗"
+
+msgctxt "STRINGS.CODEX.SWEETCANE.SUBTITLE"
+msgid "A variant of Salty Sticks"
+msgstr "咸蔗的变种"
+
+msgctxt "STRINGS.CODEX.SWEETCANE.BODY.CONTAINER1"
+msgid "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised sucrose, formed naturally as sugar accumulates between the fibres.\n\nDuplicants are very fond of eating Sweet Cane.\n\nBut Sweet Cane contains far too much sugar, and the osmotic pressure it brings leaves whoever eats it thirsty."
+msgstr "甜蔗是咸蔗的变种。它的茎秆上有着析出的蔗糖晶体，那是糖分在纤维间富集之后自然形成的。\n\n复制人很喜欢吃甜蔗。\n\n不过甜蔗的糖分实在太多，食用后带来的渗透压会导致口渴。"

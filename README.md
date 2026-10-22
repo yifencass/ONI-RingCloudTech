@@ -19,6 +19,12 @@
   - 输入：水 90.91 kg（液体管道）+ 二氧化碳 4.55 kg（搬运）+ 火椒粒 4.55 kg（搬运）
   - 输出：可乐 100 kg（液体管道）
   - 未排产时自动暂停材料搬运
+- **甜蔗（Sweet Cane）** —— 自定义作物，外形与手感对照原版「咸蔗」编写：
+  - 生长：6 周期（养殖）/ 12 周期（野生），1 格宽 2 格高
+  - 灌溉：净水 10 kg/周期
+  - 收获：每次 1 份，每份 1200 千卡
+  - 食用效果：士气 +1，但会口渴（`Thirsty`）
+  - 种子会出现在打印舱补给包中，也有专属数据库条目
 
 ## 安装
 
@@ -90,10 +96,41 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 |---|---|
 | `RingCloudTech.cs` | 入口 + 全部 Harmony 补丁 |
 | `BeverageMixerConfig.cs` | 饮料调配机建筑定义与配方 |
+| `SweetCanePlantConfig.cs` | 甜蔗植物本体（作物、灌溉、种子） |
+| `SweetCaneFoodConfig.cs` | 甜蔗可食用产物 |
+| `SweetCaneRegistrar.cs` | 甜蔗的食物定义与作物定义注册 |
+| `SweetCaneCarePackage.cs` | 把甜蔗种子加入打印舱补给包 |
 | `STRINGS.cs` | 全部可翻译文本（默认英文） |
 | `LocalizationPatch.cs` | 注册 STRINGS 树并加载 `translations/*.po` |
 | `elements/cola.yaml` | 可乐元素定义 |
+| `codex/Plants/` | 甜蔗的数据库条目 |
 | `translations/` | 语言文件，新增语言只需添加 `<code>.po` |
+| `_assets/` | 本地素材工作区（Klei 版权素材，**不入库**） |
+
+### 关于甜蔗的动画素材
+
+甜蔗复用原版「咸蔗」的动画结构，换色后打包使用。这些 `.png` / `.bytes` 属于 Klei
+版权素材，因此**不纳入版本库**，放在 `_assets/sweet_cane/` 中仅作本地备份。
+
+部署 mod 时，需要把它们复制到 mod 目录的 `anim/assets/` 下：
+
+```
+RingCloudTech/
+└── anim/
+    └── assets/
+        ├── sweet_cane/
+        │   ├── sweet_cane.png
+        │   ├── sweet_cane_anim.bytes
+        │   └── sweet_cane_build.bytes
+        ├── seed_sweet_cane/
+        │   └── ...
+        └── sweet_cane_food/
+            └── ...
+```
+
+> ⚠️ `anim/` 下**只能**放 `<分类>/<kanim名>/` 这两层目录。
+> 多出任何目录（比如备份），只要凑够两层就会被当成 kanim 加载；
+> 而同名 kanim 是**后来者覆盖**，静默无报错 —— 很容易出现「文件改对了但游戏里没变」。
 
 ## 多语言
 

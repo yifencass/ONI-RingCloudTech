@@ -1,4 +1,4 @@
-﻿namespace RingCloudTech
+namespace RingCloudTech
 {
     /// <summary>
     /// 所有可翻译文本。默认值为英文，中文由 translations/zh.po 覆盖。
@@ -84,6 +84,61 @@
                 public static LocString RECIPE_NAME = "Cola";
                 public static LocString RECIPE_DESC =
                     "Water, Carbon Dioxide, Sucrose and Pincha Peppernut, fused under pressure into a glass of Cola.";
+            }
+        }
+
+        // ── 甜蔗（SweetCane）────────────────────────────────────────
+
+        public static class CREATURES
+        {
+            public static class SPECIES
+            {
+                public static class SWEETCANE
+                {
+                    public static LocString NAME = "Sweet Cane";
+                    public static LocString DESC =
+                        "A variant of Salty Sticks, with sucrose crystals growing along its stalk. Duplicants adore eating it, but the osmotic pressure from all that sugar leaves them thirsty.";
+                    public static LocString DOMESTICATEDDESC =
+                        "This plant has been domesticated and needs irrigation to grow.";
+                }
+
+                public static class SEEDS
+                {
+                    public static class SWEETCANE
+                    {
+                        public static LocString NAME = "Sweet Cane Seed";
+                        public static LocString DESC =
+                            "The seed of a Sweet Cane. Plant it to harvest Sweet Cane.";
+                    }
+                }
+            }
+        }
+
+        public static class ITEMS
+        {
+            public static class FOOD
+            {
+                public static class SWEETCANE
+                {
+                    public static LocString NAME = "Sweet Cane";
+                    public static LocString DESC =
+                        "A variant of Salty Sticks, its stalk studded with crystallised sucrose. Duplicants love it, but it leaves them thirsty.";
+                }
+            }
+        }
+
+        public static class CODEX
+        {
+            public static class SWEETCANE
+            {
+                public static LocString TITLE = "Sweet Cane";
+                public static LocString SUBTITLE = "A variant of Salty Sticks";
+
+                public static class BODY
+                {
+                    public static LocString CONTAINER1 =
+                        "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised sucrose, formed naturally as sugar accumulates between the fibres.\n\nDuplicants are very fond of eating Sweet Cane.\n\nBut Sweet Cane contains far too much sugar, and the osmotic pressure it brings leaves whoever eats it thirsty.";
+                }
             }
         }
     }

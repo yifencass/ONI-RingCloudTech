@@ -1,0 +1,25 @@
+id: "SweetCanePlant"
+title: STRINGS.CODEX.SWEETCANE.TITLE
+
+contentContainers:
+#-----------------------------
+  - contentLayout: Vertical
+    lockID:
+
+    content:
+      - !CodexText
+          stringKey: STRINGS.CODEX.SWEETCANE.TITLE
+          style: Title
+      - !CodexText
+          stringKey: STRINGS.CODEX.SWEETCANE.SUBTITLE
+          style: Subtitle
+      - !CodexDividerLine
+          preferredWidth: -1
+#-----------------------------
+  - contentLayout: Vertical
+    lockID:
+
+    content:
+      - !CodexText
+          stringKey: STRINGS.CODEX.SWEETCANE.BODY.CONTAINER1
+          style: Body
