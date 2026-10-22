@@ -53,19 +53,24 @@ dotnet build -c Release
 
 （即 `%USERPROFILE%\Documents\Klei\OxygenNotIncluded\mods\Local\RingCloudTech`）
 
-目录结构应如下，`RingCloudTech.dll` 必须与 `elements/`、`translations/` 同级：
+因为 `anim/`、`elements/`、`translations/`、`codex/` 都已入库，最省事的做法是把
+仓库内容整个复制过去，再放上编译出的 DLL：
 
 ```
 RingCloudTech/
-├── RingCloudTech.dll
+├── RingCloudTech.dll        ← dotnet build 产物，从 bin/ 复制
 ├── mod.yaml
 ├── mod_info.yaml
+├── anim/assets/             ← 已入库，直接复制
+├── codex/Plants/
 ├── elements/
 │   └── cola.yaml
 └── translations/
     ├── zh.po
     └── en.po
 ```
+
+> `bin/`、`obj/`、`*.dll` 都在 `.gitignore` 里，克隆后需要自己编译一次。
 
 ## 构建
 
@@ -105,32 +110,45 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 | `elements/cola.yaml` | 可乐元素定义 |
 | `codex/Plants/` | 甜蔗的数据库条目 |
 | `translations/` | 语言文件，新增语言只需添加 `<code>.po` |
-| `_assets/` | 本地素材工作区（Klei 版权素材，**不入库**） |
+| `anim/` | 动画资源，已入库，克隆即可用 |
+| `_assets/` | 素材原始工作区（**不入库**，仅本地） |
 
-### 关于甜蔗的动画素材
+### 动画资源
 
-甜蔗复用原版「咸蔗」的动画结构，换色后打包使用。这些 `.png` / `.bytes` 属于 Klei
-版权素材，因此**不纳入版本库**，放在 `_assets/sweet_cane/` 中仅作本地备份。
-
-部署 mod 时，需要把它们复制到 mod 目录的 `anim/assets/` 下：
+`anim/` 已纳入版本库，克隆后即可直接组装出可用 mod，不需要额外拷贝素材。
 
 ```
-RingCloudTech/
-└── anim/
-    └── assets/
-        ├── sweet_cane/
-        │   ├── sweet_cane.png
-        │   ├── sweet_cane_anim.bytes
-        │   └── sweet_cane_build.bytes
-        ├── seed_sweet_cane/
-        │   └── ...
-        └── sweet_cane_food/
-            └── ...
+anim/assets/
+├── harmonyeye/          # 鸿蒙之眼（占位，见下）
+├── supercapacitor/      # 超级电容（占位，见下）
+├── sweet_cane/          # 甜蔗植株
+├── seed_sweet_cane/     # 甜蔗种子
+└── sweet_cane_food/     # 甜蔗产物
 ```
+
+每个目录三个文件：`<名>.png`、`<名>_anim.bytes`、`<名>_build.bytes`。
+kanim 名 = 目录名 + `_kanim`。
 
 > ⚠️ `anim/` 下**只能**放 `<分类>/<kanim名>/` 这两层目录。
 > 多出任何目录（比如备份），只要凑够两层就会被当成 kanim 加载；
 > 而同名 kanim 是**后来者覆盖**，静默无报错 —— 很容易出现「文件改对了但游戏里没变」。
+>
+> ⚠️ `_anim.bytes` / `_build.bytes` 内部嵌着原始名，改名时要一起改写，
+> 否则内部自引用会和目录名不一致。注意内部名**不一定等于**文件名
+> （原版就存在 `batteryMed` 对 `batterymed` 这种驼峰差异）。
+
+#### 当前占位资源
+
+`harmonyeye` 与 `supercapacitor` 目前是**占位动画**，用原版资源改名临时顶上，
+只为保证 mod 能正常加载（缺这两个资源会在 `RegisterBuilding` 阶段抛
+`NullReferenceException` 导致游戏启动中断）。
+
+| 目标 | 占位来源 | 状态 |
+|---|---|---|
+| `harmonyeye_kanim` | 原版 `gantry_kanim` | 待替换 |
+| `supercapacitor_kanim` | 原版 `batterymed_kanim` | 待替换 |
+
+替换时直接把三个文件覆盖即可，**不需要重新编译**（动画是运行时加载的）。
 
 ## 多语言
 
@@ -146,9 +164,12 @@ msgstr "可乐"
 
 ## 版权与协议
 
-- 本项目代码采用 **MIT 协议** 开源，详见 [LICENSE](LICENSE)。
-- 所有来自《缺氧》的贴图、动画与代码，版权归 **Klei Entertainment** 所有。本模组仅通过游戏内既有资源引用，未重新分发任何 Klei 资产。
-- 模组中复用的原版建筑贴图（汽水机 `sodamaker_kanim`）同理属于 Klei。
+- 本项目**代码**采用 **MIT 协议** 开源，详见 [LICENSE](LICENSE)。
+- 所有来自《缺氧》的贴图、动画与代码，版权归 **Klei Entertainment** 所有。
+- 本模组**打包了基于原版资源的衍生动画**（`anim/` 目录，如甜蔗复用咸蔗动画、
+  鸿蒙之眼/超级电容的占位动画复用原版建筑）。这些资产仅供本模组在游戏内使用，
+  不构成原创作品，也不得单独提取分发。
+- 若 Klei 对本项目打包衍生资产有异议，会立即移除 `anim/` 并改为运行时引用方案。
 
 ## 感谢
 
