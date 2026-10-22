@@ -56,6 +56,15 @@ namespace RingCloudTech
         /// <summary>灌溉消耗：10 kg/周期。</summary>
         public const float WATER_RATE = 10f / SECONDS_PER_CYCLE;
 
+        /// <summary>
+        /// 施肥消耗：10 kg 泥土 / 周期（1/60 kg/s，和米虱木同速）。
+        /// 甜蔗 6 周期成熟，也就是每轮消耗 60 kg 泥土。
+        /// </summary>
+        public const float FERTILIZER_RATE = 10f / SECONDS_PER_CYCLE;
+
+        /// <summary>拔除植物时掉落的植物外壳数量（原版咸蔗也是 2）。</summary>
+        public const float FIBER_ON_UPROOT = 2f;
+
         public static EdiblesManager.FoodInfo FruitInfo { get; private set; }
 
         private static bool _done;

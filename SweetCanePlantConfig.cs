@@ -75,9 +75,24 @@ namespace RingCloudTech
                 }
             });
 
+            // 施肥：不做。
+            //
+            // 原版咸蔗用 ExtendPlantToFertilizable（盐 10kg/周期），但甜蔗这边不采用：
+            //   - 甜味作物配盐逻辑上说不通
+            //   - 玩家反馈这套机制不需要
+            //
+            // 注意区分两套机制：
+            //   施肥（Fertilizer）      —— 植物从农砖吸肥料，是「生长消耗品」
+            //   微肥（Micronutrient）   —— 复制人用农场站上 buff，加速生长
+            // 后者由 ExtendEntityToBasicPlant 的 can_tinker 参数控制（见上面的调用），
+            // 和这里的施肥无关。
+
             plant.AddOrGet<StandardCropPlant>();
             plant.AddOrGet<LoopingSounds>();
             plant.AddOrGet<DirectlyEdiblePlant_Growth>();
+
+            // 拔除时掉落植物外壳（和原版咸蔗一致，它也是 2 份）
+            plant.AddOrGet<PlantFiberProducer>().amount = SweetCaneRegistrar.FIBER_ON_UPROOT;
 
             // 野生生长速率：改成养殖的一半，使野生恰好是 12 周期
             // （默认 1/2400 会让 6 周期的作物在野生下变成 24 周期）
