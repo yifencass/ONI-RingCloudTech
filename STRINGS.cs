@@ -88,9 +88,9 @@ namespace RingCloudTech
 
             public static class SWEETCANE_CRUSH
             {
-                public static LocString RECIPE_NAME = "Sucrose and Plant Fiber";
+                public static LocString RECIPE_NAME = "Sucrose and Plant Husk";
                 public static LocString RECIPE_DESC =
-                    "Sweet Cane run through the crusher, split into its sugar and its fibre.";
+                    "Sweet Cane run through the crusher, split into its sugar and its husk.";
             }
         }
 

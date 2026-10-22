@@ -1,4 +1,4 @@
-﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "可乐"
 
@@ -100,8 +100,8 @@ msgstr "甜蔗是咸蔗的变种。它的茎秆上有着析出的蔗糖晶体，
 
 msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_NAME"
 msgid "Sucrose and Plant Fiber"
-msgstr "蔗糖与植物纤维"
+msgstr "蔗糖与植物外壳"
 
 msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_DESC"
 msgid "Sweet Cane run through the crusher, split into its sugar and its fibre."
-msgstr "把甜蔗投入碎石机，分离出其中的蔗糖与纤维。"
+msgstr "把甜蔗投入碎石机，分离出其中的蔗糖与植物外壳。"

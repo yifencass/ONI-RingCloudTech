@@ -1,4 +1,4 @@
-﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "Cola"
 
@@ -99,9 +99,9 @@ msgid "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised suc
 msgstr "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised sucrose, formed naturally as sugar accumulates between the fibres.\n\nDuplicants are very fond of eating Sweet Cane.\n\nBut Sweet Cane contains far too much sugar, and the osmotic pressure it brings leaves whoever eats it thirsty."
 
 msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_NAME"
-msgid "Sucrose and Plant Fiber"
-msgstr "Sucrose and Plant Fiber"
+msgid "Sucrose and Plant Husk"
+msgstr "Sucrose and Plant Husk"
 
 msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_DESC"
-msgid "Sweet Cane run through the crusher, split into its sugar and its fibre."
-msgstr "Sweet Cane run through the crusher, split into its sugar and its fibre."
+msgid "Sweet Cane run through the crusher, split into its sugar and its husk."
+msgstr "Sweet Cane run through the crusher, split into its sugar and its husk."
