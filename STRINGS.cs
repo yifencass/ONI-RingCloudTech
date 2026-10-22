@@ -85,6 +85,13 @@ namespace RingCloudTech
                 public static LocString RECIPE_DESC =
                     "Water, Carbon Dioxide, Sucrose and Pincha Peppernut, fused under pressure into a glass of Cola.";
             }
+
+            public static class SWEETCANE_CRUSH
+            {
+                public static LocString RECIPE_NAME = "Sucrose and Plant Fiber";
+                public static LocString RECIPE_DESC =
+                    "Sweet Cane run through the crusher, split into its sugar and its fibre.";
+            }
         }
 
         // ── 甜蔗（SweetCane）────────────────────────────────────────

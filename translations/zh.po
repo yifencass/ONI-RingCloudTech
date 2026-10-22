@@ -97,3 +97,11 @@ msgstr "咸蔗的变种"
 msgctxt "STRINGS.CODEX.SWEETCANE.BODY.CONTAINER1"
 msgid "Sweet Cane is a variant of Salty Sticks. Its stalk bears crystallised sucrose, formed naturally as sugar accumulates between the fibres.\n\nDuplicants are very fond of eating Sweet Cane.\n\nBut Sweet Cane contains far too much sugar, and the osmotic pressure it brings leaves whoever eats it thirsty."
 msgstr "甜蔗是咸蔗的变种。它的茎秆上有着析出的蔗糖晶体，那是糖分在纤维间富集之后自然形成的。\n\n复制人很喜欢吃甜蔗。\n\n不过甜蔗的糖分实在太多，食用后带来的渗透压会导致口渴。"
+
+msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_NAME"
+msgid "Sucrose and Plant Fiber"
+msgstr "蔗糖与植物纤维"
+
+msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_DESC"
+msgid "Sweet Cane run through the crusher, split into its sugar and its fibre."
+msgstr "把甜蔗投入碎石机，分离出其中的蔗糖与纤维。"
