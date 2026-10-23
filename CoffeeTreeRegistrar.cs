@@ -44,8 +44,11 @@ namespace RingCloudTech
         /// </summary>
         public const string PLANT_ANIM = "coffee_tree_kanim";
 
-        /// <summary>预览：把同一张图集整图转成白色线稿后的副本，播 super_idle_full。</summary>
-        public const string PREVIEW_ANIM = "coffee_tree_preview_kanim";
+        // 预览不再单独做 kanim：直接复用 PLANT_ANIM 里的 "place" 白描剪辑。
+        // 早期版本曾把整张图集转成白色线稿做成 coffee_tree_preview_kanim，
+        // 但那样得到的白描在游戏里显示不出来，排查成本太高。
+        // 用户拍板：直接用原版那套 place 白描即可（画的是贫瘠版造型），
+        // 实际生长仍然是 super_*（正常版），两者不一致可以接受。
 
         public const string SEED_ANIM = "coffee_tree_seed_kanim";
         public const string BEAN_ANIM = "coffee_bean_kanim";

@@ -132,33 +132,21 @@ namespace RingCloudTech
                 0.3f,
                 0.3f);
 
-            // 预览：白描 kanim + 正常版满状态动画
+            // 预览：直接复用本体 kanim 里的 "place" 白描剪辑。
             //
-            // 这里带诊断与兜底：如果白描 kanim 因为任何原因没加载成功，
-            // Assets.GetAnim 会返回 null，CreateAndRegisterPreview 仍然会登记
-            // 那个 prefab（不抛异常、也不打警告），结果就是「预览完全不显示」。
-            // 所以先显式检查，失败就退回到彩色本体 kanim（至少看得见），
-            // 并把情况写进日志方便排查。
-            KAnimFile previewAnim = Assets.GetAnim(CoffeeTreeRegistrar.PREVIEW_ANIM);
-            string previewClip = "super_idle_full";
-            if (previewAnim == null)
-            {
-                Debug.LogWarning("[RingCloudTech] 预览动画 '" + CoffeeTreeRegistrar.PREVIEW_ANIM
-                    + "' 加载失败，退回使用本体动画 '" + CoffeeTreeRegistrar.PLANT_ANIM
-                    + "'（预览会显示为彩色而非白描）");
-                previewAnim = Assets.GetAnim(CoffeeTreeRegistrar.PLANT_ANIM);
-            }
-            else
-            {
-                Debug.Log("[RingCloudTech] 预览动画 '" + CoffeeTreeRegistrar.PREVIEW_ANIM
-                    + "' 加载成功，使用剪辑 '" + previewClip + "'");
-            }
-
+            // 和我们自己的生长动画一样，都来自 coffee_tree_kanim（原版虫果芽
+            // 图集的完整拷贝），所以不需要额外的预览专用 kanim。
+            //
+            // 注意 "place" 画的是原版【贫瘠版】虫果芽的造型，而不是我们生长时
+            // 用的 super_*（正常版）。这一点是刻意接受的：原版只为 WormPlant
+            // 注册了预览、也只画了一套白描，正常版根本没有对应素材。
+            // 与其自绘一张，不如直接复用它 —— 预览只是放置时的轮廓提示，
+            // 和实际长出来的植株形态不一致是可以接受的。
             EntityTemplates.CreateAndRegisterPreviewForPlant(
                 seed,
                 CoffeeTreeRegistrar.PREVIEW_ID,
-                previewAnim,
-                previewClip,
+                Assets.GetAnim(CoffeeTreeRegistrar.PLANT_ANIM),
+                "place",
                 1,
                 2);
 
