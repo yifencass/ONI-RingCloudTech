@@ -89,11 +89,13 @@ namespace RingCloudTech
         public const float TEMP_LETHAL_HIGH = 393.15f;
 
         // ── 资源 ──────────────────────────────────────────────
-        /// <summary>灌溉：污染水 7/120 kg/s（沿用火椒藤）。</summary>
-        public const float WATER_RATE = 7f / 120f;
+        // 不做灌溉，也不做施肥：唯一的环境要求是 900 勒克斯光照。
 
         /// <summary>每次收获份数。</summary>
-        public const int YIELD_UNITS = 2;
+        public const int YIELD_UNITS = 4;
+
+        /// <summary>收获时额外掉落的木材（kg）。咖啡树大部分时间在长木质茎。</summary>
+        public const float WOOD_ON_HARVEST = 50f;
 
         /// <summary>拔除植物时掉落的植物外壳数量（火椒藤是 16）。</summary>
         public const float FIBER_ON_UPROOT = 16f;

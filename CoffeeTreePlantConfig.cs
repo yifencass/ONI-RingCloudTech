@@ -76,7 +76,10 @@ namespace RingCloudTech
                 can_tinker: true,
                 require_solid_tile: true,
                 should_grow_old: true,
-                max_age: 2400f,
+                // 原版默认 2400 s（4 周期）比 18 周期的生长期短得多，
+                // 一旦成熟就会被 Growing 的 oldAge 判定强制立刻自动收获。
+                // 给到 20 周期，让玩家能自己决定什么时候收。
+                max_age: 12000f,
                 min_radiation: 0f,
                 max_radiation: 9800f,
                 baseTraitId: CoffeeTreeRegistrar.PLANT_ID + "Original",
@@ -107,6 +110,12 @@ namespace RingCloudTech
             plant.AddOrGet<IlluminationVulnerable>().SetPrefersDarkness();
 
             // 不施肥：刻意省略 ExtendPlantToFertilizable
+
+            // 收获时额外掉落木材（咖啡树大部分时间在长木质茎）
+            plant.AddOrGet<CoffeeTreeWoodYield>();
+
+            // 收获时额外掉落木材
+            plant.AddOrGet<CoffeeTreeWoodYield>();
 
             plant.AddOrGet<StandardCropPlant>();
             plant.AddOrGet<LoopingSounds>();
