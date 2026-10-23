@@ -54,6 +54,20 @@ namespace RingCloudTech
 
         private static void AddRecipe()
         {
+            // 必须先注册！
+            //
+            // LegacyModMain.Load() 的顺序是：
+            //     LoadBuildings(list);   ← 碎石机在这里跑 ConfigureBuildingTemplate，我们的 Postfix 也在这一步
+            //     LoadEntities(list);    ← 甜蔗的 FoodInfo 原本只会在实体阶段创建
+            //
+            // 建筑比实体先加载，不在这里主动初始化的话，
+            // SweetCaneRegistrar.FruitInfo 还是 null，
+            // RecipeElement(FoodInfo, amount) 会直接抛 NullReferenceException。
+            //
+            // EdiblesManager.FoodInfo 的构造函数只依赖静态列表与 Strings.Get，
+            // 这个时间点调用是安全的；本地化早已在 Localization.Initialize 完成。
+            SweetCaneRegistrar.EnsureRegistered();
+
             Tag sucroseTag = SimHashes.Sucrose.CreateTag();
             Tag fiberTag = new Tag("PlantFiber");
 
