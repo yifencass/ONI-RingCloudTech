@@ -29,10 +29,10 @@ namespace RingCloudTech
         /// <summary>每次投入的甜蔗质量，单位 kg。</summary>
         private const float INPUT_KG = 10f;
 
-        /// <summary>产出蔗糖质量。</summary>
-        private const float SUCROSE_KG = 6f;
+        /// <summary>产出蔗糖质量。甜蔗 6000 千卡，对应榨出 8 kg 蔗糖。</summary>
+        private const float SUCROSE_KG = 8f;
 
-        /// <summary>产出植物纤维质量。</summary>
+        /// <summary>产出植物外壳质量。</summary>
         private const float FIBER_KG = 4f;
 
         /// <summary>加工耗时，秒。原版碎石机配方是 40 秒。</summary>
