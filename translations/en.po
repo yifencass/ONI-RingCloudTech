@@ -1,10 +1,10 @@
-msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "Cola"
 
 msgctxt "STRINGS.ELEMENTS.COLA.DESC"
-msgid "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through."
-msgstr "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through."
+msgid "A caffeine-rich carbonated drink. Loaded with sucrose, so you'll need to eat less."
+msgstr "A caffeine-rich carbonated drink. Loaded with sucrose, so you'll need to eat less."
 
 msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.NAME"
 msgid "Beverage Mixer"
@@ -133,3 +133,15 @@ msgstr "Coffee Bean"
 msgctxt "STRINGS.ITEMS.FOOD.COFFEEBEAN.DESC"
 msgid "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up."
 msgstr "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.NAME"
+msgid "Eye of Harmony"
+msgstr "Eye of Harmony"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.DESC"
+msgid "A mysterious device of unknown make. While it is supplied with power, a <b>simulated universe</b> is born at its core.\nThe <b>simulated universe</b> feeds on the neutronium produced by the Time Bow and, given vast amounts of hydrogen, yields matter far in excess of its input mass."
+msgstr "A mysterious device of unknown make. While it is supplied with power, a <b>simulated universe</b> is born at its core.\nThe <b>simulated universe</b> feeds on the neutronium produced by the Time Bow and, given vast amounts of hydrogen, yields matter far in excess of its input mass."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.EFFECT"
+msgid "A monument to something that watched this place before the colony ever existed."
+msgstr "A monument to something that watched this place before the colony ever existed."

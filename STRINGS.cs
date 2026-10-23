@@ -1,4 +1,4 @@
-namespace RingCloudTech
+﻿namespace RingCloudTech
 {
     /// <summary>
     /// 所有可翻译文本。默认值为英文，中文由 translations/zh.po 覆盖。
@@ -15,7 +15,7 @@ namespace RingCloudTech
             {
                 public static LocString NAME = "Cola";
                 public static LocString DESC =
-                    "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through.";
+                    "A caffeine-rich carbonated drink. Loaded with sucrose, so you'll need to eat less.";
             }
         }
 
@@ -36,9 +36,9 @@ namespace RingCloudTech
                 {
                     public static LocString NAME = "Eye of Harmony";
                     public static LocString DESC =
-                        "A ring of unknown alloy suspended around a sphere of absolute darkness. The sphere only exists while the device is running.";
+                        "A mysterious device of unknown make. While it is supplied with power, a <b>simulated universe</b> is born at its core.\nThe <b>simulated universe</b> feeds on the neutronium produced by the Time Bow and, given vast amounts of hydrogen, yields matter far in excess of its input mass.";
                     public static LocString EFFECT =
-                        "A monument to something that watched the colony before it existed.\n\nOnly the machine's frame is built. Whatever sits at its centre is not built, merely <b>allowed</b>.";
+                        "A monument to something that watched this place before the colony ever existed.";
                 }
 
                 public static class SUPERCAPACITOR
@@ -72,13 +72,6 @@ namespace RingCloudTech
 
         public static class UI
         {
-            public static class HARMONYEYE
-            {
-                public static LocString RECIPE_NAME = "Molten Iron";
-                public static LocString RECIPE_DESC =
-                    "One kilogram of Hydrogen, unmade and remade as one hundred kilograms of molten iron.";
-            }
-
             public static class BEVERAGEMIXER
             {
                 public static LocString RECIPE_NAME = "Cola";

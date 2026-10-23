@@ -1,10 +1,10 @@
-msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "可乐"
 
 msgctxt "STRINGS.ELEMENTS.COLA.DESC"
-msgid "A sweet-and-spicy carbonated drink. Pincha Peppernut and sucrose, in perfect proportion, warm you right through."
-msgstr "一种甜辣的碳酸饮料，火椒和蔗糖的完美作用能极大地暖心！"
+msgid "A caffeine-rich carbonated drink. Loaded with sucrose, so you'll need to eat less."
+msgstr "一种富含咖啡因的碳酸饮料，充足的蔗糖足矣让你少吃点饭了"
 
 msgctxt "STRINGS.BUILDINGS.PREFABS.BEVERAGEMIXER.NAME"
 msgid "Beverage Mixer"
@@ -133,3 +133,15 @@ msgstr "咖啡豆"
 msgctxt "STRINGS.ITEMS.FOOD.COFFEEBEAN.DESC"
 msgid "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up."
 msgstr "咖啡树的烘焙种子。直接吃毫无风味可言，但煮得好的话能让复制人一下子清醒过来。"
+msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.NAME"
+msgid "Eye of Harmony"
+msgstr "鸿蒙之眼"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.DESC"
+msgid "A mysterious device of unknown make. While it is supplied with power, a <b>simulated universe</b> is born at its core.\nThe <b>simulated universe</b> feeds on the neutronium produced by the Time Bow and, given vast amounts of hydrogen, yields matter far in excess of its input mass."
+msgstr "一个未知的神秘装置，在电力足矣维系时，其中心将诞生一个<b>模拟宇宙</b>\n<b>模拟宇宙</b>能够基于时间之弓产生的中子质用大量的氢气换出远超输入质量的巨量物质"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.EFFECT"
+msgid "A monument to something that watched this place before the colony ever existed."
+msgstr "献给在殖民地诞生之前就已注视此地的存在的纪念碑。"
+

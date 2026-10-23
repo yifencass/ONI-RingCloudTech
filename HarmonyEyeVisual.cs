@@ -62,10 +62,13 @@ namespace RingCloudTech
         }
 
         private Operational operational;
+        private EnergyConsumer consumer;
         private Vector3 center;
         private float halfHeight = 4.5f;
         private float maxBallR = 2.18f;
         private bool active;
+        private bool lastPowered = true;
+        private bool lastWorking = true;
 
         private Shader shader;
         private Color32[] atlasPixels;
@@ -84,6 +87,7 @@ namespace RingCloudTech
         {
             base.OnSpawn();
             operational = GetComponent<Operational>();
+            consumer = GetComponent<EnergyConsumer>();
 
             Building building = GetComponent<Building>();
             if (building != null && building.Def != null)
@@ -116,6 +120,7 @@ namespace RingCloudTech
 
                 crossGo = MakeQuad("cross", CROSS_W, LoadRaw("cross", out _), 3610, out mr);
                 crossMr = mr;
+                crossMr.enabled = true;      // 十字常驻
 
                 matrixTex = new Texture2D[MATRIX_N];
                 for (int i = 0; i < MATRIX_N; i++)
@@ -125,11 +130,13 @@ namespace RingCloudTech
                 matrixGo = MakeQuad("matrix", MATRIX_W, matrixTex[0], 3620, out mr);
                 matrixMr = mr;
                 matrixMat = mr.material;
+                matrixMr.enabled = true;     // 矩阵常驻
 
                 SpawnBalls();
                 SpawnDistortion();
 
-                SetVisible(false);
+                SetPowered(false);
+                SetWorking(false);
             }
             catch (Exception e)
             {
@@ -339,12 +346,14 @@ namespace RingCloudTech
 
         // ────────────────────── 帧驱动 ──────────────────────
 
-        private void SetVisible(bool on)
+        private void SetPowered(bool on)
         {
             if (sphereMr != null) sphereMr.enabled = on;
-            if (crossMr != null) crossMr.enabled = on;
-            if (matrixMr != null) matrixMr.enabled = on;
             if (distMr != null) distMr.enabled = on;
+        }
+
+        private void SetWorking(bool on)
+        {
             for (int i = 0; i < balls.Count; i++)
             {
                 if (balls[i].tr == null) continue;
@@ -355,17 +364,36 @@ namespace RingCloudTech
 
         private void Update()
         {
-            bool working = operational == null || operational.IsOperational;
-            if (working != active)
-            {
-                active = working;
-                SetVisible(working);
-            }
-            if (!active) return;
+            // 层 2/3（黑球 + 空间扭曲）看是否接电；层 4（彩球）看是否在执行配方
+            bool powered = consumer != null && consumer.IsConnected;
+            bool working = operational != null && operational.IsActive;
 
+            if (powered != lastPowered)
+            {
+                lastPowered = powered;
+                SetPowered(powered);
+            }
+            if (working != lastWorking)
+            {
+                lastWorking = working;
+                SetWorking(working);
+            }
             clock += Time.deltaTime;
 
-            for (int i = 0; i < balls.Count; i++)
+            // 矩阵层常驻：不接电、不工作也照常显示并换帧
+            if (matrixMat != null && matrixTex != null)
+            {
+                int f = Mathf.FloorToInt(clock * MATRIX_FPS) % MATRIX_N;
+                if (f != matrixFrame)
+                {
+                    matrixFrame = f;
+                    matrixMat.mainTexture = matrixTex[f];
+                }
+            }
+
+            if (!powered && !working) return;
+
+            for (int i = 0; working && i < balls.Count; i++)
             {
                 Ball b = balls[i];
                 if (b.tr == null) continue;
@@ -383,17 +411,7 @@ namespace RingCloudTech
                 b.tr.SetPosition(center + new Vector3(x, y, 0f));
             }
 
-            if (matrixMat != null && matrixTex != null)
-            {
-                int f = Mathf.FloorToInt(clock * MATRIX_FPS) % MATRIX_N;
-                if (f != matrixFrame)
-                {
-                    matrixFrame = f;
-                    matrixMat.mainTexture = matrixTex[f];
-                }
-            }
-
-            if (distMr != null && distTex != null)
+            if (powered && distMr != null && distTex != null)
             {
                 try
                 {

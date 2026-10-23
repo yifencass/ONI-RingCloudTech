@@ -1,4 +1,4 @@
-# ONI-RingCloudTech
+﻿# ONI-RingCloudTech
 
 在《缺氧》(Oxygen Not Included) 上的「环云科技」模组。
 
@@ -16,7 +16,7 @@
   - 士气 +3
   - 运动 +4
 - **饮料调配机（Beverage Mixer）** —— 2×2 配方生产建筑，`FoodRepurposing` 科技解锁：
-  - 输入：水 90.91 kg（液体管道）+ 二氧化碳 4.55 kg（搬运）+ 火椒粒 4.55 kg（搬运）
+  - 输入：水 80 kg（液体管道）+ 火椒粒 0.91 kg（搬运）+ 蔗糖 14.54 kg（搬运），合计正好 100 kg
   - 输出：可乐 100 kg（液体管道）
   - 未排产时自动暂停材料搬运
 - **甜蔗（Sweet Cane）** —— 自定义作物，外形与手感对照原版「咸蔗」编写：
@@ -28,6 +28,27 @@
   - 拔除：掉落 2 份植物外壳
   - 支持农场站微肥照料（`can_tinker`）
   - 种子会出现在打印舱补给包中，也有专属数据库条目
+- **咖啡树（Coffee Tree）** —— 1 格宽 2 格高的作物，需要充足光照才能结果：
+  - 生长：18 周期，光照下限 900 lux
+  - 灌溉：净水 7 kg/周期
+  - 温度：263.15–343.15 K 为适宜区间，223.15 / 393.15 K 致死
+  - 收获：每次 2 份咖啡豆；拔除掉落 16 kg 植物纤维
+  - 咖啡豆可作食物原料，有专属种子、数据库条目与打印舱补给包条目
+- **超级电容库（Super Capacitor）** —— 4×3 储能建筑：
+  - 容量 800 kJ，每周期泄漏 60 J（`JOULES_LOST_PER_SECOND = 0.1`）
+  - 自身发热 0.05 kW，过热温度 50 °C，熔点 800 °C
+  - 建造材料 3200 kg，建造时间 60 s
+- **鸿蒙之眼（Harmony Eye）** —— 9×9 巨型装置，美术与机制参考 GTNH 的同名多方块：
+  - 电力：20 kW；房间类型：工业
+  - 内部可存 100 吨氢气（`StandardSealedStorage`，不漏温）
+  - 两条配方，各耗时 1800 s（3 周期），各消耗 50 吨氢气：
+    - **熔融金属小行星** —— 熔融铁 / 铜 / 铝 / 钴 / 金 / 锌 / 银 / 镍 / 铱 / 铅 / 钨 / 铌 与岩浆，每种 50 吨
+    - **理想生活小行星** —— 砂岩、沉积岩、藻类、铜矿、铁矿、铝矿、金汞齐、镍矿、锌矿、黑钨矿、石墨、花岗岩、黑曜石、菌泥、银金矿、泥土、煤炭各 50 吨，石油 / 水 / 盐水 / 浓盐水 / 污染水各 50 吨，氯气 50 吨
+  - 分层渲染：环体常驻；断电时黑球与空间扭曲消失；未排产时彩球消失
+  - 建造材料：30 吨中子质
+- **灭菌（Germ Sanitizer）** —— 把盐水与浓盐水登记为游戏原生「灭菌物」（写入各病菌的 `growthRules`），并让铜制管道与储库杀灭运输/储存物上的食物中毒、粘液肺与僵尸孢子：
+  - 铜制液体 / 气体管道：每秒衰减 50%（`COPPER_PIPE_KILL = 0.50`）
+  - 铜制储液库 / 储气库：每秒衰减 35%（`COPPER_STORAGE_KILL = 0.35`）
 
 ## 联动
 
@@ -120,6 +141,15 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 |---|---|
 | `RingCloudTech.cs` | 入口 + 全部 Harmony 补丁 |
 | `BeverageMixerConfig.cs` | 饮料调配机建筑定义与配方 |
+| `CoffeeTreeRegistrar.cs` | 咖啡树的物品 / 食物 / 作物定义与注册 |
+| `CoffeeTreePlantConfig.cs` | 咖啡树植物本体 |
+| `CoffeeBeanConfig.cs` | 咖啡豆食物定义 |
+| `SuperCapacitorConfig.cs` | 超级电容库建筑定义 |
+| `HarmonyEyeConfig.cs` | 鸿蒙之眼建筑定义与两条配方 |
+| `HarmonyEyeVisual.cs` | 鸿蒙之眼的分层渲染与彩球运动 |
+| `HarmonyEyeInfo.cs` | 鸿蒙之眼的氢气储量状态条目 |
+| `HarmonyEyeCodex.cs` | 鸿蒙之眼的数据库条目 |
+| `GermSanitizer.cs` | 盐水灭菌规则与铜制管道 / 储库灭菌 |
 | `SweetCanePlantConfig.cs` | 甜蔗植物本体（作物、灌溉、种子） |
 | `SweetCaneFoodConfig.cs` | 甜蔗可食用产物 |
 | `SweetCaneRegistrar.cs` | 甜蔗的食物定义与作物定义注册 |
@@ -138,8 +168,11 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 
 ```
 anim/assets/
-├── harmonyeye/          # 鸿蒙之眼（占位，见下）
-├── supercapacitor/      # 超级电容（占位，见下）
+├── harmonyeye/          # 鸿蒙之眼（kanim + 分层裸贴图 *.raw）
+├── supercapacitor/      # 超级电容库
+├── coffee_tree/         # 咖啡树植株
+├── coffee_tree_seed/    # 咖啡树种子
+├── coffee_bean/         # 咖啡豆
 ├── sweet_cane/          # 甜蔗植株
 ├── seed_sweet_cane/     # 甜蔗种子
 └── sweet_cane_food/     # 甜蔗产物
@@ -156,18 +189,18 @@ kanim 名 = 目录名 + `_kanim`。
 > 否则内部自引用会和目录名不一致。注意内部名**不一定等于**文件名
 > （原版就存在 `batteryMed` 对 `batterymed` 这种驼峰差异）。
 
-#### 当前占位资源
+#### 鸿蒙之眼的分层贴图
 
-`harmonyeye` 与 `supercapacitor` 目前是**占位动画**，用原版资源改名临时顶上，
-只为保证 mod 能正常加载（缺这两个资源会在 `RegisterBuilding` 阶段抛
-`NullReferenceException` 导致游戏启动中断）。
+鸿蒙之眼的环体用 kanim 加载，其余六层（空间扭曲 / 黑球 / 彩球 / 十字 / 矩阵）
+走 `MeshRenderer` + 手动 `renderQueue`，因为 ONI 里所有 `KBatchedAnimController`
+共用批次，队列是批次级的，无法单独抬高某一层。
 
-| 目标 | 占位来源 | 状态 |
-|---|---|---|
-| `harmonyeye_kanim` | 原版 `gantry_kanim` | 待替换 |
-| `supercapacitor_kanim` | 原版 `batterymed_kanim` | 待替换 |
+这些层用裸 RGBA 贴图：`anim/assets/harmonyeye/{sphere,cross,ball,matrix0..3}.raw`，
+格式为 `int32 宽 + int32 高 + 自底向上 RGBA`，运行时用 `File.ReadAllBytes` 读入后
+逐像素 `SetPixels32`（不用 `LoadRawTextureData`）。
 
-替换时直接把三个文件覆盖即可，**不需要重新编译**（动画是运行时加载的）。
+> 这些贴图与 `harmonyeye.png` 在生成脚本里由同一份参数产出，
+> 改尺寸时两边要一起重新导出。
 
 ## 多语言
 
@@ -193,6 +226,7 @@ msgstr "可乐"
 ## 感谢
 
 - **[ChiYuKe/ONIModTutorial](https://github.com/ChiYuKe/ONIModTutorial)** —— 《缺氧》Mod 开发笔记与教程。本项目的元素 `Substance` 补齐、`ComplexRecipe` 配方写法、`LocString` 本地化流程等多处实现，都参考了这份资料，省下大量逆向摸索的时间。
+- **[GTNewHorizons/GT-New-Horizons-Modpack](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack)** —— Minecraft 的 GregTech: New Horizons 整合包。本模组的「鸿蒙之眼」在设计理念上参考了整合包中的同名多方块结构，视觉母题（环绕的合金环、中心的绝对黑暗）亦由此而来。
 - **Better Food Effects** —— 本模组与它的「食物营养效果」系统做了联动。
 - **Klei Entertainment** —— 创造了《缺氧》以及开放的 Mod 接口。
 - 以及所有在开发过程中提供反馈、帮忙测试的人。

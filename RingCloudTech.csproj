@@ -11,6 +11,7 @@
     <OutputPath>bin</OutputPath>
     <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
     <NoWarn>CS0436</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!--

@@ -42,11 +42,11 @@ namespace RingCloudTech
 
         public const int HIT_POINTS = 2000;
         public const float CONSTRUCTION_TIME = 240f;
-        public const float CONSTRUCTION_MASS = 4000f;
+        public const float CONSTRUCTION_MASS = 30000f;   // 30 吨中子质
         public const float MELTING_POINT = 3600f;
         public const float STORAGE_CAPACITY = 100000f;   // 进气库：100 吨氢气
-        public const float OUT_CAPACITY = 400000f;       // 出料库
-        public const float OUTPUT_KG = 5000f;            // 每种产物 5 吨
+        public const float OUT_CAPACITY = 2000000f;       // 出料库
+        public const float OUTPUT_KG = 50000f;            // 每种产物 5 吨
 
         private static readonly CellOffset POWER_PORT = new CellOffset(0, 0);
         private static readonly CellOffset GAS_IN_PORT = new CellOffset(-4, 4);
@@ -69,6 +69,15 @@ namespace RingCloudTech
                 BuildLocationRule.OnFloor,
                 decor: BUILDINGS.DECOR.NONE,
                 noise: NOISE_POLLUTION.NONE);
+
+            // 建造材料：中子质 30 吨（ONI 建造只支持单一材料类别 + 质量）
+            Element neutronium = ElementLoader.FindElementByHash(SimHashes.Unobtanium);
+            // MaterialCategory 是 string[]：列出建造时允许消耗的材料标签
+            def.MaterialCategory = new string[]
+            {
+                neutronium != null ? neutronium.tag.ToString() : "Unobtanium"
+            };
+            def.Mass = new float[] { CONSTRUCTION_MASS };
 
             def.Floodable = false;
             def.Entombable = false;
