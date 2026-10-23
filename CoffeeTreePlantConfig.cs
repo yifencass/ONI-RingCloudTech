@@ -119,8 +119,9 @@ namespace RingCloudTech
 
             plant.AddOrGet<StandardCropPlant>();
             plant.AddOrGet<LoopingSounds>();
-            // 不给植物纤维：那是原版「植物纤维采集」技能（CanSalvagePlantFiber）
-            // 对火椒藤、芦苇这类植物的处理，咖啡树给的是木材（见 CoffeeTreeWoodYield）。
+            // 不给植物外壳（原版 PlantFiber）：那是「植物纤维采集」技能
+            // （CanSalvagePlantFiber）对火椒藤这类植物的处理，
+            // 咖啡树给的是木材（见 CoffeeTreeWoodYield）。
 
             // 种子。这里用不带 IHasDlcRestrictions 的重载（3 参起始那个），
             // 我们的 config 没有实现 IHasDlcRestrictions。

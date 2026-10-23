@@ -6,7 +6,7 @@ using TUNING;
 namespace RingCloudTech
 {
     /// <summary>
-    /// 碎石机配方：甜蔗 → 蔗糖 + 植物纤维。
+    /// 碎石机配方：甜蔗 → 蔗糖 + 植物外壳。
     ///
     /// 这条配方把 mod 内部的内容串成一条链：
     ///     甜蔗（作物） → 蔗糖（碎石机） → 可乐（饮料调配机）
@@ -106,7 +106,7 @@ namespace RingCloudTech
             };
 
             Debug.Log("[RingCloudTech] 已注册碎石机配方: 甜蔗 "
-                + INPUT_KG + "kg -> 蔗糖 " + SUCROSE_KG + "kg + 植物纤维 " + FIBER_KG + "kg");
+                + INPUT_KG + "kg -> 蔗糖 " + SUCROSE_KG + "kg + 植物外壳 " + FIBER_KG + "kg");
         }
     }
 }
