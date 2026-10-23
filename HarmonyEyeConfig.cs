@@ -119,15 +119,25 @@ namespace RingCloudTech
             fabricator.outStorage.SetDefaultStoredItemModifiers(Storage.StandardSealedStorage);
             fabricator.buildStorage.SetDefaultStoredItemModifiers(Storage.StandardSealedStorage);
 
-            // 氢气管道输入
+            // 氢气管道输入：用**独立的专用储气箱**，不再塞进 ComplexFabricator 的 inStorage。
+            // 塞进 inStorage 时，配方队列为空会触发存储区整理，气体被装罐后丢出建筑。
+            // 照储气库的做法：独立 Storage 专门存氢气，不寄生在 ComplexFabricator.inStorage 上
+            Storage hydrogenStore = go.AddComponent<Storage>();
+            hydrogenStore.capacityKg = STORAGE_CAPACITY;
+            hydrogenStore.SetDefaultStoredItemModifiers(Storage.StandardSealedStorage);
+            hydrogenStore.showInUI = true;
+
             ConduitConsumer gasIn = go.AddOrGet<ConduitConsumer>();
             gasIn.conduitType = ConduitType.Gas;
             gasIn.storage = fabricator.inStorage;
+            go.AddOrGet<HarmonyEyeInfo>();
             gasIn.capacityTag = ElementLoader.FindElementByHash(SimHashes.Hydrogen).tag;
             gasIn.capacityKG = STORAGE_CAPACITY;
-            gasIn.consumptionRate = 2f;
+            gasIn.consumptionRate = 10f;
             gasIn.forceAlwaysSatisfied = true;
-            // 以前是 Dump：氢气存不进去就被倒回世界（表现为「气变回散装掉出来」）`r`n            gasIn.wrongElementResult = ConduitConsumer.WrongElementResult.Store;
+            fabricator.inStorage.useGunForDelivery = false;   // 禁止小人送料（含罐装气体）
+            // 以前是 Dump：氢气存不进去就被倒回世界（表现为「气变回散装掉出来」）
+            gasIn.wrongElementResult = ConduitConsumer.WrongElementResult.Store;
 
             // 熔融铁液体输出
             ConduitDispenser liquidOut = go.AddOrGet<ConduitDispenser>();
@@ -196,10 +206,7 @@ namespace RingCloudTech
         {
             Tag hydrogenTag = ElementLoader.FindElementByHash(SimHashes.Hydrogen).tag;
 
-            ComplexRecipe.RecipeElement[] inputs =
-            {
-                new ComplexRecipe.RecipeElement(hydrogenTag, HYDROGEN_KG),
-            };
+            ComplexRecipe.RecipeElement[] inputs = new ComplexRecipe.RecipeElement[] { new ComplexRecipe.RecipeElement(ElementLoader.FindElementByHash(SimHashes.Hydrogen).tag, HYDROGEN_KG) };
 
             // ── 配方 1：熔融金属小行星 ──
             List<ComplexRecipe.RecipeElement> molten = new List<ComplexRecipe.RecipeElement>();
