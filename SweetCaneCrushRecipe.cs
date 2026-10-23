@@ -26,10 +26,13 @@ namespace RingCloudTech
     {
         private const string FABRICATOR_ID = "RockCrusher";
 
-        /// <summary>每次投入的甜蔗质量，单位 kg。</summary>
-        private const float INPUT_KG = 10f;
+        /// <summary>
+        /// 每次投入的甜蔗质量，单位 kg。
+        /// 5 kg 甜蔗 = 5 × 1200 千卡 = 6000 千卡总量，对应产出 8 kg 蔗糖 + 4 kg 植物外壳。
+        /// </summary>
+        private const float INPUT_KG = 5f;
 
-        /// <summary>产出蔗糖质量。甜蔗 6000 千卡，对应榨出 8 kg 蔗糖。</summary>
+        /// <summary>产出蔗糖质量。</summary>
         private const float SUCROSE_KG = 8f;
 
         /// <summary>产出植物外壳质量。</summary>

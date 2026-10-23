@@ -18,7 +18,7 @@ namespace RingCloudTech
     ///
     /// 数值设计：
     ///   生长     6 周期（养殖）= 3600 秒；野生 12 周期
-    ///   产量     每次收获 1 份，6000 千卡
+    ///   产量     每次收获 1 份，1200 千卡
     ///   灌溉     10 kg/周期 → 10/600 kg/s
     ///   副作用   食用后口渴
     ///   品质     1（士气 +1，因为士气加成直接等于 Quality 值）
@@ -47,11 +47,8 @@ namespace RingCloudTech
         /// <summary>每次收获份数。</summary>
         public const int YIELD_UNITS = 1;
 
-        /// <summary>
-        /// 每份热量（内部单位，1 千卡 = 1000）。6000000 = 6000 千卡。
-        /// 数值偏高：甜蔗定位是「高糖」作物，6000 千卡对应它能榨出 8 kg 蔗糖。
-        /// </summary>
-        public const float KCAL_PER_UNIT = 6000000f;
+        /// <summary>每份热量（内部单位，1 千卡 = 1000）。1200000 = 1200 千卡。</summary>
+        public const float KCAL_PER_UNIT = 1200000f;
 
         /// <summary>食物品质。士气加成 = 该值，所以 1 表示 +1 士气。</summary>
         public const int FOOD_QUALITY = 1;
