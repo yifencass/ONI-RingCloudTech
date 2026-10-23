@@ -30,10 +30,21 @@ namespace RingCloudTech
         public const string PREVIEW_ID = "CoffeeTree_preview";
 
         // ── 动画 ──────────────────────────────────────────────
-        /// <summary>植株：直接用原版虫果芽 kanim，取其中的 super_*（正常版）动画。</summary>
-        public const string PLANT_ANIM = "wormwood_kanim";
+        /// <summary>
+        /// 植株本体：自建的彩色 kanim 副本。
+        ///
+        /// 内容是原版虫果芽 wormwood 图集的完整拷贝，只把内部名改成 coffee_tree。
+        /// 为什么不直接引用原版 `wormwood_kanim`：
+        ///   1) 它属于太空 DLC 资产，DLC 未激活或资产未加载时 Assets.GetAnim 会返回
+        ///      null，植株就没贴图，只剩预览白描（正是之前的症状）
+        ///   2) 自带一份可以让本 mod 的植株/预览完全自洽，不受原版资源变动影响
+        ///
+        /// 动画剪辑里同时含 basic_*（贫瘠）与 super_*（正常），
+        /// 我们在 CoffeeTreePlantConfig.ANIMS 里取 super_*。
+        /// </summary>
+        public const string PLANT_ANIM = "coffee_tree_kanim";
 
-        /// <summary>预览：把整张图集转成白色线稿后的副本，播 super_idle_full。</summary>
+        /// <summary>预览：把同一张图集整图转成白色线稿后的副本，播 super_idle_full。</summary>
         public const string PREVIEW_ANIM = "coffee_tree_preview_kanim";
 
         public const string SEED_ANIM = "coffee_tree_seed_kanim";
