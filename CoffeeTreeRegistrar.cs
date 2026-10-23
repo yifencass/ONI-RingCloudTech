@@ -96,6 +96,8 @@ namespace RingCloudTech
 
         /// <summary>收获时额外掉落的木材（kg）。咖啡树大部分时间在长木质茎。</summary>
         public const float WOOD_ON_HARVEST = 50f;
+        /// <summary>收获时额外掉落的植物外壳数量（靠「植物纤维采集」技能触发）。</summary>
+        public const float FIBER_ON_UPROOT = 16f;
 
 
         public static EdiblesManager.FoodInfo BeanInfo { get; private set; }
