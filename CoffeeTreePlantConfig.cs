@@ -82,15 +82,12 @@ namespace RingCloudTech
                 baseTraitId: CoffeeTreeRegistrar.PLANT_ID + "Original",
                 baseTraitName: STRINGS.CREATURES.SPECIES.COFFEETREE.NAME);
 
-            // 灌溉：污染水（和火椒藤一致）
-            EntityTemplates.ExtendPlantToIrrigated(plant, new PlantElementAbsorber.ConsumeInfo[1]
-            {
-                new PlantElementAbsorber.ConsumeInfo
-                {
-                    tag = ElementLoader.FindElementByHash(SimHashes.DirtyWater).tag,
-                    massConsumptionRate = CoffeeTreeRegistrar.WATER_RATE,
-                },
-            });
+            // 灌溉：不做。
+            //
+            // 玩家设定：咖啡树「只需要充足的光照即可生长」。
+            // 既不需要施肥（不调用 ExtendPlantToFertilizable），
+            // 也不需要灌溉（不调用 ExtendPlantToIrrigated）。
+            // 它唯一的环境要求就是 900 勒克斯光照，见下方。
 
             // ── 光照需求 900 勒克斯 ──────────────────────────
             // 原版 PrickleFlowerConfig 的做法：
@@ -136,11 +133,32 @@ namespace RingCloudTech
                 0.3f);
 
             // 预览：白描 kanim + 正常版满状态动画
+            //
+            // 这里带诊断与兜底：如果白描 kanim 因为任何原因没加载成功，
+            // Assets.GetAnim 会返回 null，CreateAndRegisterPreview 仍然会登记
+            // 那个 prefab（不抛异常、也不打警告），结果就是「预览完全不显示」。
+            // 所以先显式检查，失败就退回到彩色本体 kanim（至少看得见），
+            // 并把情况写进日志方便排查。
+            KAnimFile previewAnim = Assets.GetAnim(CoffeeTreeRegistrar.PREVIEW_ANIM);
+            string previewClip = "super_idle_full";
+            if (previewAnim == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 预览动画 '" + CoffeeTreeRegistrar.PREVIEW_ANIM
+                    + "' 加载失败，退回使用本体动画 '" + CoffeeTreeRegistrar.PLANT_ANIM
+                    + "'（预览会显示为彩色而非白描）");
+                previewAnim = Assets.GetAnim(CoffeeTreeRegistrar.PLANT_ANIM);
+            }
+            else
+            {
+                Debug.Log("[RingCloudTech] 预览动画 '" + CoffeeTreeRegistrar.PREVIEW_ANIM
+                    + "' 加载成功，使用剪辑 '" + previewClip + "'");
+            }
+
             EntityTemplates.CreateAndRegisterPreviewForPlant(
                 seed,
                 CoffeeTreeRegistrar.PREVIEW_ID,
-                Assets.GetAnim(CoffeeTreeRegistrar.PREVIEW_ANIM),
-                "super_idle_full",
+                previewAnim,
+                previewClip,
                 1,
                 2);
 
