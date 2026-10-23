@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -602,6 +602,55 @@ namespace RingCloudTech
             catch (Exception e)
             {
                 Debug.LogError("[RingCloudTech] 修正饮水机文本失败: " + e);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 让鸿蒙之眼的 inStorage 成为「被动储气罐」。
+    ///
+    /// ComplexFabricator 有两处会把气体吐出来 / 招来小人：
+    ///   1. DropExcessIngredients：没有排队配方时，把不属于当前配方原料的东西全部 Drop。
+    ///      氢气不属于任何「正在排队」的配方原料时就被倒回世界。
+    ///   2. UpdateFetches：原料不足时创建 FetchList，派小人手动送料。
+    /// 对鸿蒙之眼这两个行为都跳过：氢气只从管道进，配方直接吃箱子里的存量。
+    /// </summary>
+    [HarmonyPatch(typeof(ComplexFabricator), "DropExcessIngredients")]
+    public static class ComplexFabricator_DropExcessIngredients_Patch
+    {
+        public static bool Prefix(ComplexFabricator __instance)
+        {
+            return !HarmonyEyeGuard.IsHarmonyEye(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(ComplexFabricator), "UpdateFetches")]
+    public static class ComplexFabricator_UpdateFetches_Patch
+    {
+        public static bool Prefix(ComplexFabricator __instance)
+        {
+            return !HarmonyEyeGuard.IsHarmonyEye(__instance);
+        }
+    }
+
+    /// <summary>判断一个 ComplexFabricator 是不是鸿蒙之眼。</summary>
+    public static class HarmonyEyeGuard
+    {
+        public static bool IsHarmonyEye(ComplexFabricator fabricator)
+        {
+            try
+            {
+                if (fabricator == null)
+                {
+                    return false;
+                }
+
+                KPrefabID id = fabricator.GetComponent<KPrefabID>();
+                return id != null && id.PrefabTag == new Tag(HarmonyEyeConfig.ID);
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
     }

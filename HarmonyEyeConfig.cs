@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TUNING;
 using UnityEngine;
 
@@ -139,7 +139,6 @@ namespace RingCloudTech
             ConduitConsumer gasIn = go.AddOrGet<ConduitConsumer>();
             gasIn.conduitType = ConduitType.Gas;
             gasIn.storage = fabricator.inStorage;
-            go.AddOrGet<HarmonyEyeInfo>();
             gasIn.capacityTag = ElementLoader.FindElementByHash(SimHashes.Hydrogen).tag;
             gasIn.capacityKG = STORAGE_CAPACITY;
             gasIn.consumptionRate = 10f;
