@@ -117,6 +117,23 @@ namespace RingCloudTech
                         public static LocString DESC =
                             "The seed of a Sweet Cane. Plant it to harvest Sweet Cane.";
                     }
+
+                    public static class COFFEETREE
+                    {
+                        public static LocString NAME = "Coffee Tree Seed";
+                        public static LocString DESC =
+                            "The seed of a Coffee Tree. Plant it in bright light to harvest Coffee Beans.";
+                    }
+                }
+
+                // ── 咖啡树（CoffeeTree）──────────────────────────
+                public static class COFFEETREE
+                {
+                    public static LocString NAME = "Coffee Tree";
+                    public static LocString DESC =
+                        "A close relative of the Pincha Peppernut Vine. Its fruit has lost all of the peppernut's heat, but carries a far higher concentration of caffeine.\n\nIt spends most of its life slowly laying down a woody stem, making it a painfully slow crop to grow, but it asks for nothing except abundant light.";
+                    public static LocString DOMESTICATEDDESC =
+                        "This plant has been domesticated. It does not need fertiliser, but demands strong light to grow.";
                 }
             }
         }
@@ -130,6 +147,13 @@ namespace RingCloudTech
                     public static LocString NAME = "Sweet Cane";
                     public static LocString DESC =
                         "A variant of Salty Sticks, its stalk studded with crystallised sucrose. Duplicants love it, but it leaves them thirsty.";
+                }
+
+                public static class COFFEEBEAN
+                {
+                    public static LocString NAME = "Coffee Bean";
+                    public static LocString DESC =
+                        "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up.";
                 }
             }
         }

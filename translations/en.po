@@ -105,3 +105,31 @@ msgstr "Sucrose and Plant Husk"
 msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_DESC"
 msgid "Sweet Cane run through the crusher, split into its sugar and its husk."
 msgstr "Sweet Cane run through the crusher, split into its sugar and its husk."
+
+msgctxt "STRINGS.CREATURES.SPECIES.COFFEETREE.NAME"
+msgid "Coffee Tree"
+msgstr "Coffee Tree"
+
+msgctxt "STRINGS.CREATURES.SPECIES.COFFEETREE.DESC"
+msgid "A close relative of the Pincha Peppernut Vine. Its fruit has lost all of the peppernut's heat, but carries a far higher concentration of caffeine.\n\nIt spends most of its life slowly laying down a woody stem, making it a painfully slow crop to grow, but it asks for nothing except abundant light."
+msgstr "A close relative of the Pincha Peppernut Vine. Its fruit has lost all of the peppernut's heat, but carries a far higher concentration of caffeine.\n\nIt spends most of its life slowly laying down a woody stem, making it a painfully slow crop to grow, but it asks for nothing except abundant light."
+
+msgctxt "STRINGS.CREATURES.SPECIES.COFFEETREE.DOMESTICATEDDESC"
+msgid "This plant has been domesticated. It does not need fertiliser, but demands strong light to grow."
+msgstr "This plant has been domesticated. It does not need fertiliser, but demands strong light to grow."
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.COFFEETREE.NAME"
+msgid "Coffee Tree Seed"
+msgstr "Coffee Tree Seed"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.COFFEETREE.DESC"
+msgid "The seed of a Coffee Tree. Plant it in bright light to harvest Coffee Beans."
+msgstr "The seed of a Coffee Tree. Plant it in bright light to harvest Coffee Beans."
+
+msgctxt "STRINGS.ITEMS.FOOD.COFFEEBEAN.NAME"
+msgid "Coffee Bean"
+msgstr "Coffee Bean"
+
+msgctxt "STRINGS.ITEMS.FOOD.COFFEEBEAN.DESC"
+msgid "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up."
+msgstr "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up."

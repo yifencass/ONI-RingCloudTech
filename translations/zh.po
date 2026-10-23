@@ -105,3 +105,31 @@ msgstr "蔗糖与植物外壳"
 msgctxt "STRINGS.UI.SWEETCANE_CRUSH.RECIPE_DESC"
 msgid "Sweet Cane run through the crusher, split into its sugar and its fibre."
 msgstr "把甜蔗投入碎石机，分离出其中的蔗糖与植物外壳。"
+
+msgctxt "STRINGS.CREATURES.SPECIES.COFFEETREE.NAME"
+msgid "Coffee Tree"
+msgstr "咖啡树"
+
+msgctxt "STRINGS.CREATURES.SPECIES.COFFEETREE.DESC"
+msgid "A close relative of the Pincha Peppernut Vine. Its fruit has lost all of the peppernut's heat, but carries a far higher concentration of caffeine.\n\nIt spends most of its life slowly laying down a woody stem, making it a painfully slow crop to grow, but it asks for nothing except abundant light."
+msgstr "火椒藤的近亲。它的果实失去了火椒粒的辛辣，但咖啡因浓度要高得多。\n\n它一生大部分时间都在缓慢地长出木质化的茎，因此生长期长得出奇地煎熬，但它除充足的光照外一无所求。"
+
+msgctxt "STRINGS.CREATURES.SPECIES.COFFEETREE.DOMESTICATEDDESC"
+msgid "This plant has been domesticated. It does not need fertiliser, but demands strong light to grow."
+msgstr "这株植物已被培育。它不需要施肥，但需要强光才能生长。"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.COFFEETREE.NAME"
+msgid "Coffee Tree Seed"
+msgstr "咖啡树种子"
+
+msgctxt "STRINGS.CREATURES.SPECIES.SEEDS.COFFEETREE.DESC"
+msgid "The seed of a Coffee Tree. Plant it in bright light to harvest Coffee Beans."
+msgstr "咖啡树的种子。把它种在光照充足的地方即可收获咖啡豆。"
+
+msgctxt "STRINGS.ITEMS.FOOD.COFFEEBEAN.NAME"
+msgid "Coffee Bean"
+msgstr "咖啡豆"
+
+msgctxt "STRINGS.ITEMS.FOOD.COFFEEBEAN.DESC"
+msgid "The roasted seed of a Coffee Tree. It has no flavour worth eating on its own, but brewed properly it will wake a Duplicant right up."
+msgstr "咖啡树的烘焙种子。直接吃毫无风味可言，但煮得好的话能让复制人一下子清醒过来。"
