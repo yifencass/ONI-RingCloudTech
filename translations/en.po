@@ -145,3 +145,38 @@ msgstr "A mysterious device of unknown make. While it is supplied with power, a 
 msgctxt "STRINGS.BUILDINGS.PREFABS.HARMONYEYE.EFFECT"
 msgid "A monument to something that watched this place before the colony ever existed."
 msgstr "A monument to something that watched this place before the colony ever existed."
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMLIQUIDCONDUIT.NAME"
+msgid "Neutronium Liquid Pipe"
+msgstr "Neutronium Liquid Pipe"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMLIQUIDCONDUIT.DESC"
+msgid "A pipe drawn from neutronium. Nothing else survives the pressure it is built to carry."
+msgstr "A pipe drawn from neutronium. Nothing else survives the pressure it is built to carry."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMLIQUIDCONDUIT.EFFECT"
+msgid "Carries <b>Liquid</b> between buildings.\n\nHolds up to <b>5 t</b> per segment."
+msgstr "Carries <b>Liquid</b> between buildings.\n\nHolds up to <b>5 t</b> per segment."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMGASCONDUIT.NAME"
+msgid "Neutronium Gas Pipe"
+msgstr "Neutronium Gas Pipe"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMGASCONDUIT.DESC"
+msgid "A pipe drawn from neutronium. Its walls shrug off the pressure that would burst any other pipe."
+msgstr "A pipe drawn from neutronium. Its walls shrug off the pressure that would burst any other pipe."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMGASCONDUIT.EFFECT"
+msgid "Carries <b>Gas</b> between buildings.\n\nHolds up to <b>1 t</b> per segment."
+msgstr "Carries <b>Gas</b> between buildings.\n\nHolds up to <b>1 t</b> per segment."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMSOLIDCONDUIT.NAME"
+msgid "Neutronium Conveyor Rail"
+msgstr "Neutronium Conveyor Rail"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMSOLIDCONDUIT.DESC"
+msgid "A rail drawn from neutronium. It moves loads that would shear an ordinary conveyor apart."
+msgstr "A rail drawn from neutronium. It moves loads that would shear an ordinary conveyor apart."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMSOLIDCONDUIT.EFFECT"
+msgid "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each."
+msgstr "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each."

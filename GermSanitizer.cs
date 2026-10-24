@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using Klei.AI;
@@ -102,7 +102,9 @@ namespace RingCloudTech
 
             Element saltWater = ElementLoader.FindElementByHash(SimHashes.SaltWater);
             Element brine = ElementLoader.FindElementByHash(SimHashes.Brine);
-            if (saltWater == null && brine == null) return;
+            Element copper = ElementLoader.FindElementByHash(SimHashes.Copper);
+            Element cuprite = ElementLoader.FindElementByHash(SimHashes.Cuprite);
+            if (saltWater == null && brine == null && copper == null && cuprite == null) return;
 
             object diseaseSet = Db.Get().Diseases;
             int patched = 0;
@@ -118,10 +120,12 @@ namespace RingCloudTech
                     if (disease.growthRules == null) disease.growthRules = new List<GrowthRule>();
                     AddDisinfectantRule(disease, saltWater, disease.elemGrowthInfo);
                     AddDisinfectantRule(disease, brine, disease.elemGrowthInfo);
+                    AddDisinfectantRule(disease, copper, disease.elemGrowthInfo);
+                    AddDisinfectantRule(disease, cuprite, disease.elemGrowthInfo);
                     patched++;
                 }
             }
-            Debug.Log("[RingCloudTech] 盐水/浓盐水已登记为灭菌物，共 " + patched + " 种疾病");
+            Debug.Log("[RingCloudTech] 盐水/浓盐水/铜/铜矿已登记为灭菌物，共 " + patched + " 种疾病");
 
             elementRulesApplied = true;
 
@@ -156,7 +160,18 @@ namespace RingCloudTech
             if (target != null) rule.Apply(target);   // 直接烘焙进本轮数据，不重跑 PopulateElemGrowthInfo
         }
 
-        /// <summary>扫描全图，衰减盐水 / 浓盐水格子里的病菌。</summary>
+        /// <summary>登记为灭菌物的四种元素：盐水、浓盐水、铜、铜矿。</summary>
+        private static bool IsDisinfectantElement(Element element)
+        {
+            if (element == null) return false;
+            SimHashes id = element.id;
+            return id == SimHashes.SaltWater
+                || id == SimHashes.Brine
+                || id == SimHashes.Copper
+                || id == SimHashes.Cuprite;
+        }
+
+        /// <summary>扫描全图，衰减盐水 / 浓盐水 / 铜 / 铜矿格子里的病菌。</summary>
         public static unsafe void SanitizeSaltWaterCells()
         {
             if (scanDisabled) return;
@@ -175,8 +190,7 @@ namespace RingCloudTech
                 for (int cell = 0; cell < cellCount; cell++)
                 {
                     Element element = elements[cell];
-                    if (element == null) continue;
-                    if (element.id != SimHashes.SaltWater && element.id != SimHashes.Brine) continue;
+                    if (!IsDisinfectantElement(element)) continue;
 
                     int count = diseaseCountPtr[cell];
                     if (count <= 0) continue;

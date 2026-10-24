@@ -54,6 +54,33 @@
                     public static LocString LOGIC_PORT_INACTIVE =
                         "Sends a <b><style=\"logic_off\">Red Signal</style></b> when the charge falls below the deactivation threshold";
                 }
+
+                public static class NEUTRONIUMLIQUIDCONDUIT
+                {
+                    public static LocString NAME = "Neutronium Liquid Pipe";
+                    public static LocString DESC =
+                        "A pipe drawn from neutronium. Nothing else survives the pressure it is built to carry.";
+                    public static LocString EFFECT =
+                        "Carries <b>Liquid</b> between buildings.\n\nHolds up to <b>5 t</b> per segment.";
+                }
+
+                public static class NEUTRONIUMGASCONDUIT
+                {
+                    public static LocString NAME = "Neutronium Gas Pipe";
+                    public static LocString DESC =
+                        "A pipe drawn from neutronium. Its walls shrug off the pressure that would burst any other pipe.";
+                    public static LocString EFFECT =
+                        "Carries <b>Gas</b> between buildings.\n\nHolds up to <b>1 t</b> per segment.";
+                }
+
+                public static class NEUTRONIUMSOLIDCONDUIT
+                {
+                    public static LocString NAME = "Neutronium Conveyor Rail";
+                    public static LocString DESC =
+                        "A rail drawn from neutronium. It moves loads that would shear an ordinary conveyor apart.";
+                    public static LocString EFFECT =
+                        "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each.";
+                }
             }
         }
 

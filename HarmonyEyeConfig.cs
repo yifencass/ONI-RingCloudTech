@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TUNING;
 using UnityEngine;
 
@@ -50,9 +50,9 @@ namespace RingCloudTech
 
         private static readonly CellOffset POWER_PORT = new CellOffset(0, 0);
         private static readonly CellOffset GAS_IN_PORT = new CellOffset(-4, 4);
-        private static readonly CellOffset LIQUID_OUT_PORT = new CellOffset(4, 4);
-        private static readonly CellOffset GAS_OUT_PORT = new CellOffset(4, 6);
-        private static readonly CellOffset SOLID_OUT_PORT = new CellOffset(4, 2);
+        public static readonly CellOffset LIQUID_OUT_PORT = new CellOffset(4, 4);
+        public static readonly CellOffset GAS_OUT_PORT = new CellOffset(4, 6);
+        public static readonly CellOffset SOLID_OUT_PORT = new CellOffset(4, 2);
 
         public override BuildingDef CreateBuildingDef()
         {
@@ -101,7 +101,7 @@ namespace RingCloudTech
             def.OutputConduitType = ConduitType.Liquid;
 
             def.UtilityInputOffset = GAS_IN_PORT;
-            def.UtilityOutputOffset = LIQUID_OUT_PORT;
+            def.UtilityOutputOffset = SOLID_OUT_PORT;
 
             return def;
         }
@@ -118,6 +118,7 @@ namespace RingCloudTech
             fabricator.keepExcessLiquids = true;
 
             go.AddOrGet<FabricatorIngredientStatusManager>();
+            go.AddOrGet<HarmonyEyeGasPurge>();   // 清掉旧存档里灌进去的非氢气
             go.AddOrGet<CopyBuildingSettings>();
 
             BuildingTemplates.CreateComplexFabricatorStorage(go, fabricator);
@@ -144,8 +145,11 @@ namespace RingCloudTech
             gasIn.consumptionRate = 10f;
             gasIn.forceAlwaysSatisfied = true;
             fabricator.inStorage.useGunForDelivery = false;   // 禁止小人送料（含罐装气体）
-            // 以前是 Dump：氢气存不进去就被倒回世界（表现为「气变回散装掉出来」）
-            gasIn.wrongElementResult = ConduitConsumer.WrongElementResult.Store;
+            // 错误元素必须 Dump：ConduitConsumer 在 Store 分支里会对建筑砸 1 点伤害
+            // （BuildingHP.DamageSourceInfo { damage = 1, source = BAD_INPUT_ELEMENT }），
+            // 而且气体被困在罐里排不出去，就成了持续损坏、修不回来的死循环。
+            // 氢气本身能正常进罐，Dump 只会把氨气之类倒回世界。
+            gasIn.wrongElementResult = ConduitConsumer.WrongElementResult.Dump;
 
             // 熔融铁液体输出
             ConduitDispenser liquidOut = go.AddOrGet<ConduitDispenser>();
@@ -153,14 +157,28 @@ namespace RingCloudTech
             liquidOut.storage = fabricator.outStorage;
             liquidOut.alwaysDispense = true;
             liquidOut.elementFilter = null;
+        liquidOut.useSecondaryOutput = true;
 
             // 副端口：视觉图标由 BuildingCellVisualizer 读 ISecondaryOutput 画出。
             // O 气体出 (8,6)、I 物品出 (8,2)。配方目前没有这两类产物，先占位。
-            ConduitSecondaryOutput gasOut = go.AddComponent<ConduitSecondaryOutput>();
+            ConduitSecondaryOutput liquidOutPort = go.AddComponent<ConduitSecondaryOutput>();
+        liquidOutPort.portInfo = new ConduitPortInfo(ConduitType.Liquid, LIQUID_OUT_PORT);
+        ConduitSecondaryOutput gasOut = go.AddComponent<ConduitSecondaryOutput>();
             gasOut.portInfo = new ConduitPortInfo(ConduitType.Gas, GAS_OUT_PORT);
 
             ConduitSecondaryOutput solidOut = go.AddComponent<ConduitSecondaryOutput>();
             solidOut.portInfo = new ConduitPortInfo(ConduitType.Solid, SOLID_OUT_PORT);
+
+            // 固体产物走运输管道输出：SolidConduitDispenser 在 useSecondaryOutput=true 时
+            // 会用 GetComponents<ISecondaryOutput>() 找到上面那个 Solid 副端口，
+            // 把 outStorage 里的固体一块块（每包最多 20 kg）送进 (4,2) 那格的运输管道。
+            // 没接管道就囤在箱子里不动 —— 这就是「依赖端口输出」。
+            SolidConduitDispenser solidDisp = go.AddOrGet<SolidConduitDispenser>();
+            solidDisp.storage = fabricator.outStorage;
+                solidDisp.solidOnly = true;
+            solidDisp.alwaysDispense = true;
+            solidDisp.elementFilter = null;
+            go.AddOrGet<HarmonyEyeSolidDispenser>();
 
             ConfigureRecipe();
             Prioritizable.AddRef(go);

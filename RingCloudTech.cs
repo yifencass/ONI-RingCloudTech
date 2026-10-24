@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -31,11 +31,32 @@ namespace RingCloudTech
             {
                 // 放进电力 → 电池子类
                 ModUtil.AddBuildingToPlanScreen("Power", SuperCapacitorConfig.ID, "batteries");
-            ModUtil.AddBuildingToPlanScreen("Base", HarmonyEyeConfig.ID, "misc");
+            // 暂时禁用鸿蒙之眼：ModUtil.AddBuildingToPlanScreen("Base", HarmonyEyeConfig.ID, "misc");
             }
             catch (Exception e)
             {
                 Debug.LogError("[RingCloudTech] 注册超级电容库到建造菜单失败: " + e);
+            }
+
+            // 暂时移除中子质管道：注册清空，下面的循环不会执行
+            string[] conduits = new string[0];
+            foreach (string conduit in conduits)
+            {
+                try
+                {
+                    ModUtil.AddBuildingToPlanScreen("Base", conduit, "pipes");
+                }
+                catch (Exception)
+                {
+                    try
+                    {
+                        ModUtil.AddBuildingToPlanScreen("Base", conduit);
+                    }
+                    catch (Exception e2)
+                    {
+                        Debug.LogError("[RingCloudTech] 注册管道失败: " + conduit + " / " + e2);
+                    }
+                }
             }
 
 
@@ -633,9 +654,261 @@ namespace RingCloudTech
         }
     }
 
+    /// <summary>
+    /// 跳过后必须同时清掉 materialNeedCache，否则 ComplexFabricator 每帧刷
+    /// 「has material needs cached, but no open fetches」警告。
+    /// </summary>
+    [HarmonyPatch(typeof(ComplexFabricator), "UpdateMaterialNeeds")]
+    public static class ComplexFabricator_UpdateMaterialNeeds_Patch
+    {
+        public static bool Prefix(ComplexFabricator __instance)
+        {
+            return !HarmonyEyeGuard.IsHarmonyEye(__instance);
+        }
+    }
+
+    /// <summary>
+    /// 鸿蒙之眼的产物输出。
+    ///
+    /// 原版 Melted 分支走 Storage.AddLiquid，而 AddLiquid 会
+    /// LiquidSourceManager.CreateChunk → GeneratedOre.CreateChunk →
+    /// Assets.GetPrefab(element.tag)。熔融金属没有液滴 prefab，于是
+    /// KInstantiate(null) 抛 NullReferenceException。
+    /// 这里接管：固体照旧进箱子，液体/气体交给 HarmonyEyeOutput 写进管道。
+    /// </summary>
+    [HarmonyPatch(typeof(ComplexFabricator), "SpawnOrderProduct")]
+    public static class ComplexFabricator_SpawnOrderProduct_Patch
+    {
+        public static bool Prefix(ComplexFabricator __instance, ComplexRecipe recipe)
+        {
+            if (!HarmonyEyeGuard.IsHarmonyEye(__instance))
+            {
+                return true;
+            }
+
+            try
+            {
+                Spawn(__instance, recipe);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[RingCloudTech] 鸿蒙之眼产物输出失败: " + e);
+            }
+
+            return false;
+        }
+
+        /// <summary>单个固体产物块的上限质量（kg）。</summary>
+        private const float SOLID_CHUNK_MAX = 1000f;
+
+        private static void Spawn(ComplexFabricator fab, ComplexRecipe recipe)
+        {
+            Storage build = fab.buildStorage;
+            Storage output = fab.outStorage;
+            if (build == null || output == null)
+            {
+                return;            }
+
+            // 原版在这一步把原料从 buildStorage 里扣掉，接管后必须自己扣。
+            foreach (ComplexRecipe.RecipeElement ingredient in recipe.ingredients)
+            {
+                build.ConsumeAndGetDisease(ingredient.material, ingredient.amount,
+                    out float _consumed, out var _disease, out float _temperature);
+            }
+
+            HarmonyEyeOutput buffer = fab.gameObject.AddOrGet<HarmonyEyeOutput>();
+            int cell = Grid.PosToCell(fab);
+
+            foreach (ComplexRecipe.RecipeElement result in recipe.results)
+            {
+                Element element = ElementLoader.GetElement(result.material);
+                if (element == null)
+                {
+                    continue;
+                }
+
+                float temperature = element.defaultValues.temperature;
+
+                // 固体：生成实体块塞进 outStorage，由 SolidConduitDispenser 从
+                // 「I 物品出」副端口送进运输管道。没接管道就一直留在箱子里。
+                if (element.IsSolid)
+                {
+                    GameObject prefab = Assets.GetPrefab(result.material);
+                    if (prefab != null)
+                    {
+                        // 一块最多 10 吨，50 吨 → 5 块
+                        float remaining = result.amount;
+                        while (remaining > 0.01f)
+                        {
+                            float piece = Mathf.Min(remaining, SOLID_CHUNK_MAX);
+                            remaining -= piece;
+
+                            GameObject chunk = GameUtil.KInstantiate(prefab, Grid.SceneLayer.Ore);
+                            chunk.transform.SetPosition(Grid.CellToPosCCC(cell, Grid.SceneLayer.Ore));
+                            PrimaryElement pe = chunk.GetComponent<PrimaryElement>();
+                            if (pe != null)
+                            {
+                                pe.MassPerUnit = piece;      // 每单位就是整块，运输轨道不会再去 20kg 分装
+                                  pe.Units = 1f;
+                                  pe.SetMassTemperature(piece, temperature);
+                            }
+                            chunk.SetActive(true);
+                            output.Store(chunk);
+                        }
+                    }
+                    else
+                    {
+                        // 没有实体块 prefab 的固体，退化成直接堆到格子上
+                        if (element.IsLiquid && !element.IsGas)
+                    {
+                        fab.outStorage.AddLiquid(element.id, result.amount, temperature, 0, 0);
+                    }
+                    else
+                    {
+                        buffer.Enqueue(element, result.amount, temperature);
+                    }
+                    }
+                }
+                else
+                {
+                    if (element.IsLiquid && !element.IsGas)
+                    {
+                        fab.outStorage.AddLiquid(element.id, result.amount, temperature, 0, 0);
+                    }
+                    else
+                    {
+                        buffer.Enqueue(element, result.amount, temperature);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 拦掉鸿蒙之眼对「非氢气」的摄入。
+    ///
+    /// ConduitConsumer.Consume 对不匹配 capacityTag 的元素**无条件**触发
+    /// BuildingHP.DamageSourceInfo { damage = 1, source = BAD_INPUT_ELEMENT }，
+    /// 与 wrongElementResult 是 Store 还是 Dump 无关；同时错误气体一旦进箱就出不来。
+    /// 所以这里在消费之前直接跳过：气体留在管道里形成背压，既不吞也不挨伤害。
+    /// </summary>
+    [HarmonyPatch(typeof(ConduitConsumer), "Consume")]
+    public static class ConduitConsumer_Consume_Patch
+    {
+        public static bool Prefix(ConduitConsumer __instance, ConduitFlow conduit_mgr)
+        {
+            try
+            {
+                if (__instance == null || !HarmonyEyeGuard.IsHarmonyEye(__instance.gameObject))
+                {
+                    return true;
+                }
+
+                if (conduit_mgr == null)
+                {
+                    return true;
+                }
+
+                int cell = HarmonyEyeGuard.GetConsumerCell(__instance);
+                if (cell < 0)
+                {
+                    return true;
+                }
+
+                ConduitFlow.ConduitContents contents = conduit_mgr.GetContents(cell);
+                if (contents.mass <= 0f)
+                {
+                    return true;
+                }
+
+                Element element = ElementLoader.FindElementByHash(contents.element);
+                if (element == null)
+                {
+                    return false;
+                }
+
+                // 只放行氢气，其余元素原样留在管道里。
+                if (element.HasTag(ElementLoader.FindElementByHash(SimHashes.Hydrogen).tag))
+                {
+                    return true;
+                }
+
+                HarmonyEyeGuard.LogRejected(element);
+                return false;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+        }
+    }
     /// <summary>判断一个 ComplexFabricator 是不是鸿蒙之眼。</summary>
     public static class HarmonyEyeGuard
     {
+        private static readonly System.Reflection.MethodInfo GetInputCellMethod =
+            AccessTools.Method(typeof(ConduitConsumer), "GetInputCell");
+
+        /// <summary>
+        /// 取 ConduitConsumer 的输入格。直接调 protected virtual 的 GetInputCell(conduitType)，
+        /// 比自己读私有字段 utilityCell 稳（字段名随版本改动就静默失效）。
+        /// </summary>
+        public static int GetConsumerCell(ConduitConsumer consumer)
+        {
+            try
+            {
+                if (consumer == null || GetInputCellMethod == null)
+                {
+                    return -1;
+                }
+
+                object cell = GetInputCellMethod.Invoke(consumer, new object[] { consumer.conduitType });
+                return cell is int value ? value : -1;
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+        }
+
+        private static readonly HashSet<Tag> LoggedRejects = new HashSet<Tag>();
+
+        public static void LogRejected(Element element)
+        {
+            try
+            {
+                if (element == null)
+                {
+                    return;
+                }
+
+                if (LoggedRejects.Add(element.tag))
+                {
+                    Debug.Log("[RingCloudTech] 鸿蒙之眼拒绝非氢气输入: " + element.tag);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        public static bool IsHarmonyEye(GameObject go)
+        {
+            try
+            {
+                if (go == null)
+                {
+                    return false;
+                }
+
+                KPrefabID id = go.GetComponent<KPrefabID>();
+                return id != null && id.PrefabTag == new Tag(HarmonyEyeConfig.ID);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public static bool IsHarmonyEye(ComplexFabricator fabricator)
         {
             try
