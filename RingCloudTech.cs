@@ -38,6 +38,16 @@ namespace RingCloudTech
                 Debug.LogError("[RingCloudTech] 注册超级电容库到建造菜单失败: " + e);
             }
 
+            try
+            {
+                // 放进基地 → 站台子类
+                // [实验性] 暂时停用研究台：ModUtil.AddBuildingToPlanScreen("Base", BiologyResearchCenterConfig.ID, "stations");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[RingCloudTech] 注册生物学研究台到建造菜单失败: " + e);
+            }
+
             // 暂时移除中子质管道：注册清空，下面的循环不会执行
             string[] conduits = new string[0];
             foreach (string conduit in conduits)
