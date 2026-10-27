@@ -1,37 +1,38 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RingCloudTech
 {
     /// <summary>
-    /// 鸿蒙之眼的产物输出。
+    /// 鸿蒙之眼的产物出口 —— 直接写进 ALN 频道。
     ///
-    /// 原版 ComplexFabricator 的 Melted 分支调用 Storage.AddLiquid，而
-    /// Storage.AddLiquid 会走 LiquidSourceManager.CreateChunk → GeneratedOre.CreateChunk，
-    /// 后者用 Assets.GetPrefab(element.tag) 取液滴 prefab。熔融金属/岩浆这类元素
-    /// 从来没有液滴 prefab，于是 GetPrefab 返回 null，KInstantiate 抛
-    /// NullReferenceException —— 这就是熔融产物崩溃的根因。
+    /// 为什么不能走原版：Melted 分支会调 Storage.AddLiquid，
+    /// 进而走 LiquidSourceManager.CreateChunk → GeneratedOre.CreateChunk →
+    /// Assets.GetPrefab(element.tag)，而熔融金属/岩浆没有液滴 prefab，
+    /// GetPrefab 返回 null 后 KInstantiate 抛 NullReferenceException。
+    /// 频道存的是「Tag + 质量」，不需要任何 prefab，正好绕开这个坑。
     ///
-    /// 因此液体/气体产物不进箱子：液体直接写进液体输出管道
-    /// （ConduitFlow.AddElement 不需要任何 prefab），管道没接时浇到世界格上；
-    /// 气体没有输出管道，直接放到建筑上方那格。固体仍然走箱子。
+    /// 之前这层是「攒着 → 往管道/世界格写」，现在改成「攒着 → 往频道写」。
+    /// 频道满（或没接上频道）时留在队列里慢慢重试，不丢产物。
     /// </summary>
     public class HarmonyEyeOutput : KMonoBehaviour, ISim200ms
     {
-        /// <summary>每 200ms 每个条目最多排出的质量，避免一格瞬间超压。</summary>
+        /// <summary>每 200ms 每个条目最多存入的质量，避免一次性把频道压满。</summary>
         private const float MAX_PER_TICK = 5000f;
 
         private struct Pending
         {
-            public SimHashes hash;
+            public Tag tag;
             public float mass;
             public float temp;
-            public bool isGas;
-            public bool isSolid;
         }
 
         private readonly List<Pending> pending = new List<Pending>();
 
+        private HarmonyEyeAlnBridge bridge;
+        private bool loggedNoChannel;
+
+        /// <summary>产物入队，由 SpawnOrderProduct 补丁调用。</summary>
         public void Enqueue(Element element, float mass, float temp)
         {
             if (element == null || mass <= 0f)
@@ -41,11 +42,9 @@ namespace RingCloudTech
 
             pending.Add(new Pending
             {
-                hash = element.id,
+                tag = element.tag,
                 mass = mass,
                 temp = temp,
-                isGas = element.IsGas,
-                isSolid = element.IsSolid,
             });
         }
 
@@ -56,121 +55,49 @@ namespace RingCloudTech
                 return;
             }
 
-            int baseCell = Grid.PosToCell(gameObject);
-            if (!Grid.IsValidCell(baseCell))
+            if (bridge == null)
             {
+                bridge = GetComponent<HarmonyEyeAlnBridge>();
+            }
+
+            if (bridge == null || !bridge.HasChannel)
+            {
+                if (!loggedNoChannel)
+                {
+                    loggedNoChannel = true;
+                    Debug.Log("[RingCloudTech] 鸿蒙之眼产物暂存（尚未接入 ALN 频道），累计 " +
+                              pending.Count + " 项");
+                }
+
                 return;
             }
 
-            int liquidCell = Grid.OffsetCell(baseCell, HarmonyEyeConfig.LIQUID_OUT_PORT);
-            int gasCell = Grid.OffsetCell(baseCell, HarmonyEyeConfig.GAS_OUT_PORT);
-            int solidCell = Grid.OffsetCell(baseCell, HarmonyEyeConfig.SOLID_OUT_PORT);
-            ConduitFlow liquids = Game.Instance != null ? Game.Instance.liquidConduitFlow : null;
-            ConduitFlow gases = Game.Instance != null ? Game.Instance.gasConduitFlow : null;
-            bool hasPipe = liquids != null && Grid.IsValidCell(liquidCell) && liquids.HasConduit(liquidCell);
-            bool hasGasPipe = gases != null && Grid.IsValidCell(gasCell) && gases.HasConduit(gasCell);
+            loggedNoChannel = false;
+            int cell = Grid.PosToCell(gameObject);
 
             for (int i = pending.Count - 1; i >= 0; i--)
             {
                 Pending p = pending[i];
-                float left = p.mass;
+                float chunk = Mathf.Min(p.mass, MAX_PER_TICK);
+                float stored = bridge.Deposit(p.tag, chunk, cell, p.temp);
 
-                if (p.isGas)
-                {
-                    // 气体：只从「O 气体出」那格的气体管道走
-                    if (!hasGasPipe)
-                    {
-                        continue;
-                    }
-                    float chunk = Mathf.Min(left, MAX_PER_TICK);
-                    left -= gases.AddElement(gasCell, p.hash, chunk, p.temp, byte.MaxValue, 0);
-                }
-                else if (p.isSolid)
-                {
-                    // 没有实体块 prefab 的固体：堆到「I 物品出」那格
-                    float chunk = Mathf.Min(left, MAX_PER_TICK);
-                    SimMessages.AddRemoveSubstance(
-                        Grid.IsValidCell(solidCell) ? solidCell : baseCell, p.hash,
-                        CellEventLogger.Instance.FabricatorProduceMelted,
-                        chunk, p.temp, byte.MaxValue, 0);
-                    left -= chunk;
-                }
-                else
-                {
-                    // 液体：沿「L 液体出」那格所在的管道网络找格子。
-                    // 一格管道只能装一种元素，13 种熔融产物挤同一格时，
-                    // 后面 12 种永远进不去 —— 必须分散到网络里的不同格。
-                    if (!hasPipe)
-                    {
-                        continue;
-                    }
-                    float chunk = Mathf.Min(left, MAX_PER_TICK);
-                    left -= PushLiquid(liquids, liquidCell, p.hash, chunk, p.temp);
-                }
+                p.mass -= stored;
 
-                if (left > 0.01f)
-                {
-                    p.mass = left;
-                    pending[i] = p;
-                }
-                else
+                if (p.mass <= 0.01f)
                 {
                     pending.RemoveAt(i);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 从出口格开始沿管道网络 BFS，把质量分摊到「空着」或「装的正是这种元素」的格子上。
-        /// 返回实际写进去的质量。
-        /// </summary>
-        private static float PushLiquid(ConduitFlow flow, int start, SimHashes hash, float mass, float temp)
-        {
-            if (mass <= 0f || !Grid.IsValidCell(start) || !flow.HasConduit(start))
-            {
-                return 0f;
-            }
-
-            float left = mass;
-            int visitedLimit = 24;
-
-            Queue<int> queue = new Queue<int>();
-            HashSet<int> seen = new HashSet<int>();
-            queue.Enqueue(start);
-            seen.Add(start);
-
-            int guard = 0;
-            while (queue.Count > 0 && left > 0.01f && guard < visitedLimit)
-            {
-                int cell = queue.Dequeue();
-                guard++;
-
-                ConduitFlow.ConduitContents contents = flow.GetContents(cell);
-                bool same = contents.element == hash;
-                bool empty = contents.element == SimHashes.Vacuum;
-                if (same || empty)
+                else
                 {
-                    left -= flow.AddElement(cell, hash, left, temp, byte.MaxValue, 0);
+                    pending[i] = p;
                 }
 
-                // 继续沿相邻的管道格扩散
-                int[] neighbours =
+                // 一点都存不进去，说明频道满了或没电，这一轮不用再试别的条目。
+                if (stored <= 0f)
                 {
-                    Grid.CellLeft(cell), Grid.CellRight(cell),
-                    Grid.CellAbove(cell), Grid.CellBelow(cell),
-                };
-                for (int i = 0; i < neighbours.Length; i++)
-                {
-                    int n = neighbours[i];
-                    if (Grid.IsValidCell(n) && !seen.Contains(n) && flow.HasConduit(n))
-                    {
-                        seen.Add(n);
-                        queue.Enqueue(n);
-                    }
+                    break;
                 }
             }
-
-            return mass - left;
         }
     }
 }

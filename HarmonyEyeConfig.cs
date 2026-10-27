@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TUNING;
 using UnityEngine;
 
@@ -8,10 +8,16 @@ namespace RingCloudTech
     /// 鸿蒙之眼：9×9 巨型装置。
     ///
     /// 走配方逻辑（ComplexFabricator），不是元素转换器：
-    ///     输入   氢气 1 kg
-    ///     耗时   100 s
-    ///     产出   熔融铁 100 kg     （平均每秒 1 kg）
-    ///     产物用 TemperatureOperation.Melted，保证出来是液态铁
+    ///     输入   氢气 50 t
+    ///     耗时   1800 s（3 周期）
+    ///     产出   熔融金属 12 种 / 理想生活 23 种，每种 50 t
+    ///
+    /// **氢气与产物全部走 ALN 频道**，建筑本身没有任何管道/运输端口：
+    ///     - 进气：HarmonyEyeAlnBridge 每秒从频道取氢，补进 inStorage
+    ///     - 出料：HarmonyEyeOutput 把配方产物直接 DepositToChannel
+    ///     - 电力：仍由建筑自己吃电网 20 kW，不托管给 ALN 能量池
+    ///
+    /// 没装 ALN 时本建筑没有氢源，会静止不工作（不会崩）。
     ///
     /// 储库用 StandardSealedStorage：存进去的元素不与外界换热，即「不漏温存储」。
     ///
@@ -20,11 +26,8 @@ namespace RingCloudTech
     /// 第 2 层的动态内容（空间扭曲 + 彩球）由 HarmonyEyeVisual 运行时渲染。
     ///
     /// 端口（相对左下角）：
-    ///     W 电源   (4,0)
-    ///     G 气体入 (0,4)
-    ///     F 液体出 (8,4)
-    ///     I 物品出 (8,2)  由整栋储库承担
-    ///     O 气体出 (8,6)  配方无气体产物，预留
+    ///     W 电源   (0,0)
+    /// 其余端口（气体入 / 液体出 / 气体出 / 物品出）在 ALN 化改造中全部取消。
     /// </summary>
     public class HarmonyEyeConfig : IBuildingConfig
     {
@@ -36,7 +39,6 @@ namespace RingCloudTech
         public const int HEIGHT = 9;
 
         public const float HYDROGEN_KG = 50000f;    // 每次配方消耗 50 吨氢气
-        public const float IRON_KG = 100f;
         public const float RECIPE_TIME = 1800f;     // 3 个周期
         public const float POWER_WATTS = 20000f;
 
@@ -45,14 +47,10 @@ namespace RingCloudTech
         public const float CONSTRUCTION_MASS = 30000f;   // 30 吨中子质
         public const float MELTING_POINT = 3600f;
         public const float STORAGE_CAPACITY = 100000f;   // 进气库：100 吨氢气
-        public const float OUT_CAPACITY = 2000000f;       // 出料库
-        public const float OUTPUT_KG = 50000f;            // 每种产物 5 吨
+        public const float OUT_CAPACITY = 2000000f;       // 出料库（产物正常走频道，这里只做兜底）
+        public const float OUTPUT_KG = 50000f;            // 每种产物 50 吨
 
         private static readonly CellOffset POWER_PORT = new CellOffset(0, 0);
-        private static readonly CellOffset GAS_IN_PORT = new CellOffset(-4, 4);
-        public static readonly CellOffset LIQUID_OUT_PORT = new CellOffset(4, 4);
-        public static readonly CellOffset GAS_OUT_PORT = new CellOffset(4, 6);
-        public static readonly CellOffset SOLID_OUT_PORT = new CellOffset(4, 2);
 
         public override BuildingDef CreateBuildingDef()
         {
@@ -90,18 +88,14 @@ namespace RingCloudTech
             def.SceneLayer = Grid.SceneLayer.Building;
             def.ShowInBuildMenu = true;
 
+            // 电力保持不变：鸿蒙之眼自己吃电网，不经 ALN 能量池。
             def.RequiresPowerInput = true;
             def.EnergyConsumptionWhenActive = POWER_WATTS;
             def.SelfHeatKilowattsWhenActive = 4f;
             def.PowerInputOffset = POWER_PORT;
 
-            // 端口类型必须写在这两个字段上：
-            // BuildingCellVisualizer.CheckRequiresGasInput() 读的就是 InputConduitType
-            def.InputConduitType = ConduitType.Gas;
-            def.OutputConduitType = ConduitType.Liquid;
-
-            def.UtilityInputOffset = GAS_IN_PORT;
-            def.UtilityOutputOffset = SOLID_OUT_PORT;
+            // 不再声明任何管道端口：InputConduitType / OutputConduitType 保持默认 None，
+            // BuildingCellVisualizer 也就不会再画 G/F/O/I 图标。
 
             return def;
         }
@@ -118,7 +112,6 @@ namespace RingCloudTech
             fabricator.keepExcessLiquids = true;
 
             go.AddOrGet<FabricatorIngredientStatusManager>();
-            go.AddOrGet<HarmonyEyeGasPurge>();   // 清掉旧存档里灌进去的非氢气
             go.AddOrGet<CopyBuildingSettings>();
 
             BuildingTemplates.CreateComplexFabricatorStorage(go, fabricator);
@@ -128,63 +121,16 @@ namespace RingCloudTech
             fabricator.outStorage.capacityKg = OUT_CAPACITY;
             fabricator.outStorage.SetDefaultStoredItemModifiers(Storage.StandardSealedStorage);
             fabricator.buildStorage.SetDefaultStoredItemModifiers(Storage.StandardSealedStorage);
+            fabricator.inStorage.useGunForDelivery = false;   // 禁止小人送料
 
-            // 氢气管道输入：用**独立的专用储气箱**，不再塞进 ComplexFabricator 的 inStorage。
-            // 塞进 inStorage 时，配方队列为空会触发存储区整理，气体被装罐后丢出建筑。
-            // 照储气库的做法：独立 Storage 专门存氢气，不寄生在 ComplexFabricator.inStorage 上
-            Storage hydrogenStore = go.AddComponent<Storage>();
-            hydrogenStore.capacityKg = STORAGE_CAPACITY;
-            hydrogenStore.SetDefaultStoredItemModifiers(Storage.StandardSealedStorage);
-            hydrogenStore.showInUI = true;
-
-            ConduitConsumer gasIn = go.AddOrGet<ConduitConsumer>();
-            gasIn.conduitType = ConduitType.Gas;
-            gasIn.storage = fabricator.inStorage;
-            gasIn.capacityTag = ElementLoader.FindElementByHash(SimHashes.Hydrogen).tag;
-            gasIn.capacityKG = STORAGE_CAPACITY;
-            gasIn.consumptionRate = 10f;
-            gasIn.forceAlwaysSatisfied = true;
-            fabricator.inStorage.useGunForDelivery = false;   // 禁止小人送料（含罐装气体）
-            // 错误元素必须 Dump：ConduitConsumer 在 Store 分支里会对建筑砸 1 点伤害
-            // （BuildingHP.DamageSourceInfo { damage = 1, source = BAD_INPUT_ELEMENT }），
-            // 而且气体被困在罐里排不出去，就成了持续损坏、修不回来的死循环。
-            // 氢气本身能正常进罐，Dump 只会把氨气之类倒回世界。
-            gasIn.wrongElementResult = ConduitConsumer.WrongElementResult.Dump;
-
-            // 熔融铁液体输出
-            ConduitDispenser liquidOut = go.AddOrGet<ConduitDispenser>();
-            liquidOut.conduitType = ConduitType.Liquid;
-            liquidOut.storage = fabricator.outStorage;
-            liquidOut.alwaysDispense = true;
-            liquidOut.elementFilter = null;
-        liquidOut.useSecondaryOutput = true;
-
-            // 副端口：视觉图标由 BuildingCellVisualizer 读 ISecondaryOutput 画出。
-            // O 气体出 (8,6)、I 物品出 (8,2)。配方目前没有这两类产物，先占位。
-            ConduitSecondaryOutput liquidOutPort = go.AddComponent<ConduitSecondaryOutput>();
-        liquidOutPort.portInfo = new ConduitPortInfo(ConduitType.Liquid, LIQUID_OUT_PORT);
-        ConduitSecondaryOutput gasOut = go.AddComponent<ConduitSecondaryOutput>();
-            gasOut.portInfo = new ConduitPortInfo(ConduitType.Gas, GAS_OUT_PORT);
-
-            ConduitSecondaryOutput solidOut = go.AddComponent<ConduitSecondaryOutput>();
-            solidOut.portInfo = new ConduitPortInfo(ConduitType.Solid, SOLID_OUT_PORT);
-
-            // 固体产物走运输管道输出：SolidConduitDispenser 在 useSecondaryOutput=true 时
-            // 会用 GetComponents<ISecondaryOutput>() 找到上面那个 Solid 副端口，
-            // 把 outStorage 里的固体一块块（每包最多 20 kg）送进 (4,2) 那格的运输管道。
-            // 没接管道就囤在箱子里不动 —— 这就是「依赖端口输出」。
-            SolidConduitDispenser solidDisp = go.AddOrGet<SolidConduitDispenser>();
-            solidDisp.storage = fabricator.outStorage;
-                solidDisp.solidOnly = true;
-            solidDisp.alwaysDispense = true;
-            solidDisp.elementFilter = null;
-            go.AddOrGet<HarmonyEyeSolidDispenser>();
+            // ALN 桥接：进气 + 出料全部走频道。
+            go.AddOrGet<HarmonyEyeAlnBridge>();
 
             ConfigureRecipe();
             Prioritizable.AddRef(go);
         }
 
-        // 熔融金属小行星：12 种熔融物各 5 吨（银在游戏里不存在）
+        // 熔融金属小行星：12 种熔融物各 50 吨
         private static readonly string[] MOLTEN_OUTPUTS =
         {
             "MoltenIron", "MoltenCopper", "MoltenAluminum", "MoltenCobalt",
@@ -269,6 +215,7 @@ namespace RingCloudTech
             Debug.Log("[RingCloudTech] 已注册配方 " + id1 + " / " + id2
                       + "（熔融 " + molten.Count + " 种，理想生活 " + life.Count + " 种）");
         }
+
         public override void DoPostConfigureComplete(GameObject go)
         {
             go.AddOrGet<HarmonyEyeVisual>();

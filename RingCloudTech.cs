@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -31,7 +31,17 @@ namespace RingCloudTech
             {
                 // 放进电力 → 电池子类
                 ModUtil.AddBuildingToPlanScreen("Power", SuperCapacitorConfig.ID, "batteries");
-            // 暂时禁用鸿蒙之眼：ModUtil.AddBuildingToPlanScreen("Base", HarmonyEyeConfig.ID, "misc");
+
+                // 鸿蒙之眼：软依赖 ALN。没有 ALN 就没有氢源也没有产物出口，
+                // 建出来也只是个不工作的空壳，索性不进建造菜单。
+                if (HarmonyEyeAln.Installed)
+                {
+                    ModUtil.AddBuildingToPlanScreen("Base", HarmonyEyeConfig.ID, "misc");
+                }
+                else
+                {
+                    Debug.Log("[RingCloudTech] 未检测到 ALN，鸿蒙之眼不注册到建造菜单");
+                }
             }
             catch (Exception e)
             {
@@ -336,7 +346,12 @@ namespace RingCloudTech
                 return;
             }
             AddUnlock(tech, SuperCapacitorConfig.ID);
-            AddUnlock(tech, HarmonyEyeConfig.ID);
+
+            // 鸿蒙之眼依赖 ALN 才能运转，没装 ALN 时不进科技树。
+            if (HarmonyEyeAln.Installed)
+            {
+                AddUnlock(tech, HarmonyEyeConfig.ID);
+            }
 
         }
 
@@ -708,16 +723,13 @@ namespace RingCloudTech
             return false;
         }
 
-        /// <summary>单个固体产物块的上限质量（kg）。</summary>
-        private const float SOLID_CHUNK_MAX = 1000f;
-
         private static void Spawn(ComplexFabricator fab, ComplexRecipe recipe)
         {
             Storage build = fab.buildStorage;
-            Storage output = fab.outStorage;
-            if (build == null || output == null)
+            if (build == null)
             {
-                return;            }
+                return;
+            }
 
             // 原版在这一步把原料从 buildStorage 里扣掉，接管后必须自己扣。
             foreach (ComplexRecipe.RecipeElement ingredient in recipe.ingredients)
@@ -726,8 +738,10 @@ namespace RingCloudTech
                     out float _consumed, out var _disease, out float _temperature);
             }
 
+            // 产物不再生成实体块、也不写管道/箱子：统一进 HarmonyEyeOutput 队列，
+            // 由它按 ALN 频道能接受的速度 DepositToChannel。
+            // 顺带彻底避开 Melted 液体没有 prefab 导致的 KInstantiate 崩溃。
             HarmonyEyeOutput buffer = fab.gameObject.AddOrGet<HarmonyEyeOutput>();
-            int cell = Grid.PosToCell(fab);
 
             foreach (ComplexRecipe.RecipeElement result in recipe.results)
             {
@@ -737,59 +751,7 @@ namespace RingCloudTech
                     continue;
                 }
 
-                float temperature = element.defaultValues.temperature;
-
-                // 固体：生成实体块塞进 outStorage，由 SolidConduitDispenser 从
-                // 「I 物品出」副端口送进运输管道。没接管道就一直留在箱子里。
-                if (element.IsSolid)
-                {
-                    GameObject prefab = Assets.GetPrefab(result.material);
-                    if (prefab != null)
-                    {
-                        // 一块最多 10 吨，50 吨 → 5 块
-                        float remaining = result.amount;
-                        while (remaining > 0.01f)
-                        {
-                            float piece = Mathf.Min(remaining, SOLID_CHUNK_MAX);
-                            remaining -= piece;
-
-                            GameObject chunk = GameUtil.KInstantiate(prefab, Grid.SceneLayer.Ore);
-                            chunk.transform.SetPosition(Grid.CellToPosCCC(cell, Grid.SceneLayer.Ore));
-                            PrimaryElement pe = chunk.GetComponent<PrimaryElement>();
-                            if (pe != null)
-                            {
-                                pe.MassPerUnit = piece;      // 每单位就是整块，运输轨道不会再去 20kg 分装
-                                  pe.Units = 1f;
-                                  pe.SetMassTemperature(piece, temperature);
-                            }
-                            chunk.SetActive(true);
-                            output.Store(chunk);
-                        }
-                    }
-                    else
-                    {
-                        // 没有实体块 prefab 的固体，退化成直接堆到格子上
-                        if (element.IsLiquid && !element.IsGas)
-                    {
-                        fab.outStorage.AddLiquid(element.id, result.amount, temperature, 0, 0);
-                    }
-                    else
-                    {
-                        buffer.Enqueue(element, result.amount, temperature);
-                    }
-                    }
-                }
-                else
-                {
-                    if (element.IsLiquid && !element.IsGas)
-                    {
-                        fab.outStorage.AddLiquid(element.id, result.amount, temperature, 0, 0);
-                    }
-                    else
-                    {
-                        buffer.Enqueue(element, result.amount, temperature);
-                    }
-                }
+                buffer.Enqueue(element, result.amount, element.defaultValues.temperature);
             }
         }
     }
