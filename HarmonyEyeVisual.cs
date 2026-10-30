@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -137,6 +137,14 @@ namespace RingCloudTech
 
                 SetPowered(false);
                 SetWorking(false);
+
+                // 关键：把「上一次状态」也归到 false。
+                // 两个字段的初值是 true（原意是「第一帧强制翻转一次」），
+                // 但这里已经把层关掉了；如果不同步归零，第一帧 Update 会判定
+                // powered(true) == lastPowered(true) 而不调用 SetPowered，
+                // 黑球与空间扭曲就会永久停在关闭状态。
+                lastPowered = false;
+                lastWorking = false;
             }
             catch (Exception e)
             {
