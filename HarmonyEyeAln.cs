@@ -33,6 +33,8 @@ namespace RingCloudTech
         private static MethodInfo amountMethod;
         private static MethodInfo fullMethod;
         private static MethodInfo capacityMethod;
+        private static MethodInfo categoryRemainingMethod;
+        private static Type categoryEnumType;
         private static FieldInfo managedEnabledField;
         private static Type requesterType;
 
@@ -103,6 +105,8 @@ namespace RingCloudTech
                 amountMethod = FindStatic(storage, "GetChannelAmount");
                 fullMethod = FindStatic(storage, "IsChannelFull");
                 capacityMethod = FindStatic(storage, "GetChannelCapacity");
+                categoryRemainingMethod = FindStatic(storage, "GetChannelCategoryRemainingCapacity");
+                categoryEnumType = AccessTools.TypeByName("Applied_Logistics_Network.ItemCategoryType");
 
                 requesterType = AccessTools.TypeByName(RequesterTypeName);
                 if (requesterType != null)
@@ -225,6 +229,48 @@ namespace RingCloudTech
                 WarnOnce("读取频道容量失败", e);
                 return 0f;
             }
+        }
+
+        /// <summary>
+        /// 频道里该元素所属品类（固/液/气）的剩余容量（kg）。
+        /// ALN 的分类容量是分开算的，所以氢气、熔融铁、砂岩各走各的额度。
+        /// 拿不到分类接口时返回 -1，调用方退回「整频道未满就照常尝试」。
+        /// </summary>
+        public static float GetRemainingCapacity(int channel, Element element)
+        {
+            if (!Available || channel <= 0 || element == null ||
+                categoryRemainingMethod == null || categoryEnumType == null)
+            {
+                return -1f;
+            }
+
+            try
+            {
+                object category = Enum.ToObject(categoryEnumType, CategoryIndexOf(element));
+                object result = categoryRemainingMethod.Invoke(null, new object[] { channel, category });
+                return result is float remaining ? remaining : -1f;
+            }
+            catch (Exception e)
+            {
+                WarnOnce("读取频道分类剩余容量失败", e);
+                return -1f;
+            }
+        }
+
+        /// <summary>对应 ALN 的 ItemCategoryType 枚举序：Solid=0 / Liquid=1 / Gas=2 / Food=3。</summary>
+        private static int CategoryIndexOf(Element element)
+        {
+            if (element.IsLiquid)
+            {
+                return 1;
+            }
+
+            if (element.IsGas)
+            {
+                return 2;
+            }
+
+            return 0;
         }
 
         /// <summary>

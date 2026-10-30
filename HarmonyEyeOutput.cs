@@ -96,42 +96,45 @@ namespace RingCloudTech
 
             loggedNoChannel = false;
 
-            // 网络满了就等下一轮，不做无谓的 Deposit 调用
-            if (HarmonyEyeAln.IsChannelFull(bridge.Channel))
-            {
-                if (!loggedFull || Time.unscaledTime - lastFullLogTime > 60f)
-                {
-                    loggedFull = true;
-                    lastFullLogTime = Time.unscaledTime;
-                    Debug.Log("[RingCloudTech] ALN 频道 " + bridge.Channel + " 已满，" +
-                              "鸿蒙之眼滞留 " + Mathf.RoundToInt(PendingMass) + " kg 产物等待空位");
-                }
-
-                return;
-            }
-
-            loggedFull = false;
-
             int cell = Grid.PosToCell(gameObject);
-            float budget = HarmonyEyeSettings.OutputRate;
+            float perItemCap = HarmonyEyeSettings.OutputRate;   // 0 或负数 = 不限
+            bool anyFull = false;
 
-            for (int i = 0; i < queueTags.Length && budget > 0.01f; i++)
+            // 按队列顺序逐条调度：能一次全进就全进，装不下就装能装的部分。
+            for (int i = 0; i < queueTags.Length; i++)
             {
                 Tag tag = TagManager.Create(queueTags[i]);
-                float want = Mathf.Min(queueMasses[i], budget);
-                float stored = bridge.Deposit(tag, want, cell, queueTemps[i]);
+                Element element = ElementLoader.GetElement(tag);
 
+                float want = queueMasses[i];
+                if (perItemCap > 0f)
+                {
+                    want = Mathf.Min(want, perItemCap);
+                }
+
+                // 先问 ALN 这个品类还剩多少空间；装不下就缩短本条
+                float remaining = element != null ? HarmonyEyeAln.GetRemainingCapacity(bridge.Channel, element) : -1f;
+                if (remaining >= 0f)
+                {
+                    if (remaining <= 0.01f)
+                    {
+                        anyFull = true;
+                        continue;          // 这一品类满了，换下一条（可能是另一种品类）
+                    }
+
+                    want = Mathf.Min(want, remaining);
+                }
+
+                if (want <= 0.01f)
+                {
+                    continue;
+                }
+
+                float stored = bridge.Deposit(tag, want, cell, queueTemps[i]);
                 if (stored > 0f)
                 {
                     queueMasses[i] -= stored;
                     PendingMass -= stored;
-                    budget -= stored;
-                }
-
-                // 这一次灌不进去，说明网络刚满/没电，本轮到此为止
-                if (stored <= 0f)
-                {
-                    break;
                 }
 
                 if (queueMasses[i] <= 0.01f)
@@ -139,6 +142,24 @@ namespace RingCloudTech
                     RemoveAt(i);
                     i--;
                 }
+                else
+                {
+                    // 连「剩余容量」都装不下，说明网络刚满，本轮到此为止
+                    anyFull = true;
+                    break;
+                }
+            }
+
+            if (anyFull && (!loggedFull || Time.unscaledTime - lastFullLogTime > 60f))
+            {
+                loggedFull = true;
+                lastFullLogTime = Time.unscaledTime;
+                Debug.Log("[RingCloudTech] ALN 频道 " + bridge.Channel + " 空间不足，" +
+                          "鸿蒙之眼滞留 " + Mathf.RoundToInt(PendingMass) + " kg 产物等待空位");
+            }
+            else if (!anyFull)
+            {
+                loggedFull = false;
             }
         }
 

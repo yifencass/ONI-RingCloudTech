@@ -8,14 +8,14 @@ namespace RingCloudTech
     /// <summary>
     /// 鸿蒙之眼的外部配置文件（`harmonyeye.cfg`，放在 mod 根目录、与 dll 同级）。
     ///
-    /// 为什么要文件：配方时间、每秒出网速率这类数值调起来频繁，
+    /// 为什么要文件：配方时间、产物入网上限这类数值调起来频繁，
     /// 改一次代码要重新编译部署，改成文本文件后改完重启游戏就行。
     ///
     /// 文件不存在时会自动写一份带注释的默认配置出来。
     ///
     /// 支持的行格式：
     ///     recipe_time = 60        # 配方耗时（秒），两种配方共用
-    ///     output_rate = 5000      # 每秒最多往网络里推多少 kg 产物
+    ///     output_rate = 0         # 单条产物单次入网上限（kg），0 = 不限
     /// `#` / `;` / `//` 开头的行与空行会被忽略；键名不区分大小写。
     /// </summary>
     internal static class HarmonyEyeSettings
@@ -26,8 +26,8 @@ namespace RingCloudTech
         /// <summary>没有配置文件时的配方耗时（原版设计值：3 个周期）。</summary>
         public const float DefaultRecipeTime = 1800f;
 
-        /// <summary>没有配置文件时的每秒出网速率（kg/s）。</summary>
-        public const float DefaultOutputRate = 5000f;
+        /// <summary>没有配置文件时的单条产物入网上限；0 表示不限（由网络剩余容量决定）。</summary>
+        public const float DefaultOutputRate = 0f;
 
         private const float MinValue = 0.1f;
         private const float MaxValue = 1000000f;
@@ -46,7 +46,7 @@ namespace RingCloudTech
             }
         }
 
-        /// <summary>每秒最多往 ALN 频道推多少 kg 产物。</summary>
+        /// <summary>单条产物单次入网的上限（kg）；0 = 不限。</summary>
         public static float OutputRate
         {
             get
@@ -130,15 +130,14 @@ namespace RingCloudTech
                     continue;
                 }
 
-                parsed = Mathf.Clamp(parsed, MinValue, MaxValue);
-
                 if (key == "recipe_time")
                 {
-                    recipeTime = parsed;
+                    recipeTime = Mathf.Clamp(parsed, MinValue, MaxValue);
                 }
                 else if (key == "output_rate")
                 {
-                    outputRate = parsed;
+                    // 0 是合法值：表示不限量，由 ALN 分类剩余容量决定每条产物能进多少
+                    outputRate = Mathf.Max(0f, parsed);
                 }
             }
 
@@ -176,9 +175,9 @@ namespace RingCloudTech
                     "# 配方耗时（秒）。两种配方共用。默认 1800（3 个周期），调试时可用 60。\r\n" +
                     "recipe_time = 60\r\n" +
                     "\r\n" +
-                    "# 每秒最多往 ALN 频道推多少 kg 产物。产物先进机器内部缓冲，\r\n" +
-                    "# 再由这个速率一点点灌进网络，避免一次把网络塞满。\r\n" +
-                    "output_rate = 5000\r\n";
+                    "# 单条产物的单次入网上限（kg）。0 = 不限：能一次全进就全进，\r\n" +
+                    "# 装不下就按 ALN 该品类的剩余容量装一部分。\r\n" +
+                    "output_rate = 0\r\n";
 
                 File.WriteAllText(path, text, new System.Text.UTF8Encoding(false));
                 recipeTime = 60f;
