@@ -24,10 +24,19 @@ namespace RingCloudTech
         /// <summary>队列里还剩多少 kg（UI/日志用）。</summary>
         public float PendingMass { get; private set; }
 
-        /// <summary>产物队列：用三个平行数组，KSerialization 对它最稳。</summary>
-        [Serialize] private string[] queueTags = new string[0];
-        [Serialize] private float[] queueMasses = new float[0];
-        [Serialize] private float[] queueTemps = new float[0];
+        /// <summary>
+        /// 产物队列：运行时用三个平行数组。
+        ///
+        /// 注意：这三个字段**不能**加 [Serialize] 交给 KSerializer 直接存。
+        /// 它对 string[] 这类引用类型数组不可靠，实测表现为「读档后队列被清空」。
+        /// 存档统一走下面那个字符串字段。
+        /// </summary>
+        private string[] queueTags = new string[0];
+        private float[] queueMasses = new float[0];
+        private float[] queueTemps = new float[0];
+
+        /// <summary>存档用的队列快照，格式 `tag|mass|temp;tag|mass|temp`。</summary>
+        [Serialize] private string queueData = "";
 
         private HarmonyEyeAlnBridge bridge;
         private bool loggedNoChannel;
@@ -50,7 +59,74 @@ namespace RingCloudTech
                 false, OverlayModes.None.ID,
                 true, StatusItem.ALL_OVERLAYS, PendingText);
 
+            ParseQueue();
             UpdatePendingStatus();
+        }
+
+        // ── 队列的存档序列化 ──
+
+        private void FlushQueue()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            for (int i = 0; i < queueTags.Length; i++)
+            {
+                if (queueMasses[i] <= 0.01f)
+                {
+                    continue;
+                }
+
+                if (sb.Length > 0)
+                {
+                    sb.Append(';');
+                }
+
+                sb.Append(queueTags[i]).Append('|')
+                  .Append(queueMasses[i].ToString("R", System.Globalization.CultureInfo.InvariantCulture)).Append('|')
+                  .Append(queueTemps[i].ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            queueData = sb.ToString();
+        }
+
+        private void ParseQueue()
+        {
+            queueTags = new string[0];
+            queueMasses = new float[0];
+            queueTemps = new float[0];
+            PendingMass = 0f;
+
+            if (string.IsNullOrEmpty(queueData))
+            {
+                return;
+            }
+
+            string[] entries = queueData.Split(';');
+            for (int i = 0; i < entries.Length; i++)
+            {
+                string[] parts = entries[i].Split('|');
+                if (parts.Length != 3 || string.IsNullOrEmpty(parts[0]))
+                {
+                    continue;
+                }
+
+                if (!float.TryParse(parts[1], System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out float mass) || mass <= 0.01f)
+                {
+                    continue;
+                }
+
+                float.TryParse(parts[2], System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out float temp);
+
+                int count = queueTags.Length;
+                System.Array.Resize(ref queueTags, count + 1);
+                System.Array.Resize(ref queueMasses, count + 1);
+                System.Array.Resize(ref queueTemps, count + 1);
+                queueTags[count] = parts[0];
+                queueMasses[count] = mass;
+                queueTemps[count] = temp;
+                PendingMass += mass;
+            }
         }
 
         private void UpdatePendingStatus()
@@ -87,6 +163,7 @@ namespace RingCloudTech
                     queueMasses[i] += mass;
                     queueTemps[i] = temp;
                     PendingMass += mass;
+                    FlushQueue();
                     UpdatePendingStatus();
                     return;
                 }
@@ -105,6 +182,7 @@ namespace RingCloudTech
             queueMasses = masses;
             queueTemps = temps;
             PendingMass += mass;
+            FlushQueue();
             UpdatePendingStatus();
         }
 
@@ -200,6 +278,7 @@ namespace RingCloudTech
                 loggedFull = false;
             }
 
+            FlushQueue();
             UpdatePendingStatus();
         }
 
