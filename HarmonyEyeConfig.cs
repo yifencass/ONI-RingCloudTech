@@ -127,6 +127,11 @@ namespace RingCloudTech
             // ALN 桥接：进气 + 出料全部走频道。
             go.AddOrGet<HarmonyEyeAlnBridge>();
 
+            // 产物滞留队列必须挂在**预制体**上。
+            // 运行时用 AddOrGet 加上的组件不会进存档（KSerializer 只序列化预制体里
+            // 已有的 KMonoBehaviour），表现就是读档后滞留产物凭空消失。
+            go.AddOrGet<HarmonyEyeOutput>();
+
             ConfigureRecipe();
             Prioritizable.AddRef(go);
         }

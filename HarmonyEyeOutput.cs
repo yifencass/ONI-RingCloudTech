@@ -61,6 +61,12 @@ namespace RingCloudTech
 
             ParseQueue();
             UpdatePendingStatus();
+
+            if (PendingMass > 0.01f)
+            {
+                Debug.Log("[RingCloudTech] 鸿蒙之眼读档恢复滞留产物 " +
+                          Mathf.RoundToInt(PendingMass) + " kg（" + queueTags.Length + " 条）");
+            }
         }
 
         // ── 队列的存档序列化 ──

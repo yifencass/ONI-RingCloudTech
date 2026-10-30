@@ -928,7 +928,10 @@ namespace RingCloudTech
             // 产物不再生成实体块、也不写管道/箱子：统一进 HarmonyEyeOutput 队列，
             // 由它按 ALN 频道能接受的速度 DepositToChannel。
             // 顺带彻底避开 Melted 液体没有 prefab 导致的 KInstantiate 崩溃。
-            HarmonyEyeOutput buffer = fab.gameObject.AddOrGet<HarmonyEyeOutput>();
+            // 组件在预制体里（HarmonyEyeConfig.ConfigureBuildingTemplate），
+            // 这里只取；万一拿到 null 才补挂，保证旧存档也能跑。
+            HarmonyEyeOutput buffer = fab.GetComponent<HarmonyEyeOutput>()
+                                      ?? fab.gameObject.AddOrGet<HarmonyEyeOutput>();
 
             foreach (ComplexRecipe.RecipeElement result in recipe.results)
             {
