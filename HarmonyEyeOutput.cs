@@ -1,36 +1,37 @@
-using System.Collections.Generic;
+using KSerialization;
 using UnityEngine;
 
 namespace RingCloudTech
 {
     /// <summary>
-    /// 鸿蒙之眼的产物出口 —— 直接写进 ALN 频道。
+    /// 鸿蒙之眼的产物出口 —— 先进机器内部缓冲，再按速率灌进 ALN 频道。
     ///
-    /// 为什么不能走原版：Melted 分支会调 Storage.AddLiquid，
-    /// 进而走 LiquidSourceManager.CreateChunk → GeneratedOre.CreateChunk →
-    /// Assets.GetPrefab(element.tag)，而熔融金属/岩浆没有液滴 prefab，
+    /// 为什么不能走原版：Melted 分支调 Storage.AddLiquid →
+    /// LiquidSourceManager.CreateChunk → GeneratedOre.CreateChunk →
+    /// Assets.GetPrefab(element.tag)，熔融金属/岩浆没有液滴 prefab，
     /// GetPrefab 返回 null 后 KInstantiate 抛 NullReferenceException。
-    /// 频道存的是「Tag + 质量」，不需要任何 prefab，正好绕开这个坑。
+    /// 频道存的是「Tag + 质量」，不需要 prefab，正好绕开这个坑。
     ///
-    /// 之前这层是「攒着 → 往管道/世界格写」，现在改成「攒着 → 往频道写」。
-    /// 频道满（或没接上频道）时留在队列里慢慢重试，不丢产物。
+    /// 为什么不再「一次全推」：一次配方 13~23 种 × 50 吨 = 650~1150 吨，
+    /// 远超网络容量。现在的顺序是：
+    ///   1. 产物入队（机器内部缓冲，随存档保存）；
+    ///   2. 每秒检查频道是否已满；
+    ///   3. 没满就按 output_rate 一点点推进去，推不动就留到下秒。
     /// </summary>
-    public class HarmonyEyeOutput : KMonoBehaviour, ISim200ms
+    public class HarmonyEyeOutput : KMonoBehaviour, ISim1000ms
     {
-        /// <summary>每 200ms 每个条目最多存入的质量，避免一次性把频道压满。</summary>
-        private const float MAX_PER_TICK = 5000f;
+        /// <summary>队列里还剩多少 kg（UI/日志用）。</summary>
+        public float PendingMass { get; private set; }
 
-        private struct Pending
-        {
-            public Tag tag;
-            public float mass;
-            public float temp;
-        }
-
-        private readonly List<Pending> pending = new List<Pending>();
+        /// <summary>产物队列：用三个平行数组，KSerialization 对它最稳。</summary>
+        [Serialize] private string[] queueTags = new string[0];
+        [Serialize] private float[] queueMasses = new float[0];
+        [Serialize] private float[] queueTemps = new float[0];
 
         private HarmonyEyeAlnBridge bridge;
         private bool loggedNoChannel;
+        private float lastFullLogTime;
+        private bool loggedFull;
 
         /// <summary>产物入队，由 SpawnOrderProduct 补丁调用。</summary>
         public void Enqueue(Element element, float mass, float temp)
@@ -40,17 +41,38 @@ namespace RingCloudTech
                 return;
             }
 
-            pending.Add(new Pending
+            string tagName = element.tag.ToString();
+            int count = queueTags.Length;
+
+            for (int i = 0; i < count; i++)
             {
-                tag = element.tag,
-                mass = mass,
-                temp = temp,
-            });
+                if (queueTags[i] == tagName)
+                {
+                    queueMasses[i] += mass;
+                    queueTemps[i] = temp;
+                    PendingMass += mass;
+                    return;
+                }
+            }
+
+            string[] tags = new string[count + 1];
+            float[] masses = new float[count + 1];
+            float[] temps = new float[count + 1];
+            System.Array.Copy(queueTags, tags, count);
+            System.Array.Copy(queueMasses, masses, count);
+            System.Array.Copy(queueTemps, temps, count);
+            tags[count] = tagName;
+            masses[count] = mass;
+            temps[count] = temp;
+            queueTags = tags;
+            queueMasses = masses;
+            queueTemps = temps;
+            PendingMass += mass;
         }
 
-        public void Sim200ms(float dt)
+        public void Sim1000ms(float dt)
         {
-            if (pending.Count == 0)
+            if (queueTags.Length == 0)
             {
                 return;
             }
@@ -60,44 +82,97 @@ namespace RingCloudTech
                 bridge = GetComponent<HarmonyEyeAlnBridge>();
             }
 
-            if (bridge == null || !bridge.HasChannel)
+            if (bridge == null || !bridge.HasChannel || !HarmonyEyeAln.Available)
             {
                 if (!loggedNoChannel)
                 {
                     loggedNoChannel = true;
-                    Debug.Log("[RingCloudTech] 鸿蒙之眼产物暂存（尚未接入 ALN 频道），累计 " +
-                              pending.Count + " 项");
+                    Debug.Log("[RingCloudTech] 鸿蒙之眼产物暂存于机器内（尚未接入 ALN 频道），累计 " +
+                              Mathf.RoundToInt(PendingMass) + " kg");
                 }
 
                 return;
             }
 
             loggedNoChannel = false;
-            int cell = Grid.PosToCell(gameObject);
 
-            for (int i = pending.Count - 1; i >= 0; i--)
+            // 网络满了就等下一轮，不做无谓的 Deposit 调用
+            if (HarmonyEyeAln.IsChannelFull(bridge.Channel))
             {
-                Pending p = pending[i];
-                float chunk = Mathf.Min(p.mass, MAX_PER_TICK);
-                float stored = bridge.Deposit(p.tag, chunk, cell, p.temp);
-
-                p.mass -= stored;
-
-                if (p.mass <= 0.01f)
+                if (!loggedFull || Time.unscaledTime - lastFullLogTime > 60f)
                 {
-                    pending.RemoveAt(i);
-                }
-                else
-                {
-                    pending[i] = p;
+                    loggedFull = true;
+                    lastFullLogTime = Time.unscaledTime;
+                    Debug.Log("[RingCloudTech] ALN 频道 " + bridge.Channel + " 已满，" +
+                              "鸿蒙之眼滞留 " + Mathf.RoundToInt(PendingMass) + " kg 产物等待空位");
                 }
 
-                // 一点都存不进去，说明频道满了或没电，这一轮不用再试别的条目。
+                return;
+            }
+
+            loggedFull = false;
+
+            int cell = Grid.PosToCell(gameObject);
+            float budget = HarmonyEyeSettings.OutputRate;
+
+            for (int i = 0; i < queueTags.Length && budget > 0.01f; i++)
+            {
+                Tag tag = TagManager.Create(queueTags[i]);
+                float want = Mathf.Min(queueMasses[i], budget);
+                float stored = bridge.Deposit(tag, want, cell, queueTemps[i]);
+
+                if (stored > 0f)
+                {
+                    queueMasses[i] -= stored;
+                    PendingMass -= stored;
+                    budget -= stored;
+                }
+
+                // 这一次灌不进去，说明网络刚满/没电，本轮到此为止
                 if (stored <= 0f)
                 {
                     break;
                 }
+
+                if (queueMasses[i] <= 0.01f)
+                {
+                    RemoveAt(i);
+                    i--;
+                }
             }
+        }
+
+        private void RemoveAt(int index)
+        {
+            int count = queueTags.Length;
+            if (count <= 1)
+            {
+                queueTags = new string[0];
+                queueMasses = new float[0];
+                queueTemps = new float[0];
+                PendingMass = 0f;
+                return;
+            }
+
+            string[] tags = new string[count - 1];
+            float[] masses = new float[count - 1];
+            float[] temps = new float[count - 1];
+            for (int i = 0, j = 0; i < count; i++)
+            {
+                if (i == index)
+                {
+                    continue;
+                }
+
+                tags[j] = queueTags[i];
+                masses[j] = queueMasses[i];
+                temps[j] = queueTemps[i];
+                j++;
+            }
+
+            queueTags = tags;
+            queueMasses = masses;
+            queueTemps = temps;
         }
     }
 }

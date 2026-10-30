@@ -39,7 +39,8 @@ namespace RingCloudTech
         public const int HEIGHT = 9;
 
         public const float HYDROGEN_KG = 50000f;    // 每次配方消耗 50 吨氢气
-        public const float RECIPE_TIME = 1800f;     // 3 个周期
+        /// <summary>配方耗时的默认值；实际生效值来自 harmonyeye.cfg 的 recipe_time。</summary>
+        public const float RECIPE_TIME = HarmonyEyeSettings.DefaultRecipeTime;
         public const float POWER_WATTS = 20000f;
 
         public const int HIT_POINTS = 2000;
@@ -187,7 +188,7 @@ namespace RingCloudTech
             string id1 = ComplexRecipeManager.MakeRecipeID(ID, inputs, molten.ToArray());
             new ComplexRecipe(id1, inputs, molten.ToArray())
             {
-                time = RECIPE_TIME,
+                time = HarmonyEyeSettings.RecipeTime,
                 description = "模拟熔融金属行星的形成与陨落",
                 fabricators = new List<Tag> { TagManager.Create(ID) },
                 sortOrder = 100,
@@ -204,7 +205,7 @@ namespace RingCloudTech
             string id2 = ComplexRecipeManager.MakeRecipeID(ID, inputs, life.ToArray());
             new ComplexRecipe(id2, inputs, life.ToArray())
             {
-                time = RECIPE_TIME,
+                time = HarmonyEyeSettings.RecipeTime,
                 description = "模拟理想聚居地的形成与陨落",
                 fabricators = new List<Tag> { TagManager.Create(ID) },
                 sortOrder = 200,

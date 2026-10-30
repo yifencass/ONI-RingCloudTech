@@ -31,6 +31,8 @@ namespace RingCloudTech
         private static MethodInfo depositMethod;
         private static MethodInfo withdrawMethod;
         private static MethodInfo amountMethod;
+        private static MethodInfo fullMethod;
+        private static MethodInfo capacityMethod;
         private static FieldInfo managedEnabledField;
         private static Type requesterType;
 
@@ -99,6 +101,8 @@ namespace RingCloudTech
                 depositMethod = FindStatic(storage, "DepositToChannel");
                 withdrawMethod = FindStatic(storage, "WithdrawAndStore");
                 amountMethod = FindStatic(storage, "GetChannelAmount");
+                fullMethod = FindStatic(storage, "IsChannelFull");
+                capacityMethod = FindStatic(storage, "GetChannelCapacity");
 
                 requesterType = AccessTools.TypeByName(RequesterTypeName);
                 if (requesterType != null)
@@ -179,6 +183,46 @@ namespace RingCloudTech
             catch (Exception e)
             {
                 WarnOnce("读取频道存量失败", e);
+                return 0f;
+            }
+        }
+
+        /// <summary>频道是否已满（ALN 自己的判定，含能量/容量两种拒绝原因）。</summary>
+        public static bool IsChannelFull(int channel)
+        {
+            if (!Available || channel <= 0 || fullMethod == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                object result = fullMethod.Invoke(null, new object[] { channel });
+                return result is bool full && full;
+            }
+            catch (Exception e)
+            {
+                WarnOnce("查询频道是否已满失败", e);
+                return false;
+            }
+        }
+
+        /// <summary>频道总容量（kg）。拿不到时返回 0。</summary>
+        public static float GetChannelCapacity(int channel)
+        {
+            if (!Available || channel <= 0 || capacityMethod == null)
+            {
+                return 0f;
+            }
+
+            try
+            {
+                object result = capacityMethod.Invoke(null, new object[] { channel });
+                return result is float capacity ? capacity : 0f;
+            }
+            catch (Exception e)
+            {
+                WarnOnce("读取频道容量失败", e);
                 return 0f;
             }
         }
