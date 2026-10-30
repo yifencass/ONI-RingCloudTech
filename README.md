@@ -1,4 +1,4 @@
-﻿# ONI-RingCloudTech
+# ONI-RingCloudTech
 
 在《缺氧》(Oxygen Not Included) 上的「环云科技」模组。
 
@@ -38,7 +38,7 @@
   - 容量 800 kJ，每周期泄漏 60 J（`JOULES_LOST_PER_SECOND = 0.1`）
   - 自身发热 0.05 kW，过热温度 50 °C，熔点 800 °C
   - 建造材料 3200 kg，建造时间 60 s
-- **鸿蒙之眼（Harmony Eye）** —— 9×9 巨型装置，美术与机制参考 GTNH 的同名多方块：
+- **鸿蒙之眼（Harmony Eye）** `[ALN联动建筑第一版]` —— 9×9 巨型装置，美术与机制参考 GTNH 的同名多方块：
   - 电力：20 kW；房间类型：工业。**电力由建筑自己吃电网，不托管给 ALN 能量池**
   - **无管道 / 运输端口**：氢气与产物全部走 ALN 频道（需要安装 Applied Logistics Network）
     - 进气：每秒从所属频道取氢，补满内部 100 吨储气（`StandardSealedStorage`，不漏温）
