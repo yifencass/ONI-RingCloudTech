@@ -1071,4 +1071,37 @@ namespace RingCloudTech
             }
         }
     }
+
+    /// <summary>
+    /// 鸿蒙之眼的「真软依赖」：没装 ALN 就不注册这个建筑。
+    ///
+    /// 只跳过 ModUtil.AddBuildingToPlanScreen 是不够的 —— 那只是不进建造菜单，
+    /// 而原版 LegacyModMain.LoadBuildings(types) 会把所有装配里实现了
+    /// IBuildingConfig 的类型一次性交给 GeneratedBuildings.LoadGeneratedBuildings，
+    /// BuildingDef 与 prefab 照样会被注册（调试菜单里还能刷出来）。
+    ///
+    /// 这里直接在入口把类型从列表里剔掉，等于这个建筑在这局游戏里根本不存在。
+    /// 装回 ALN 后重启即可恢复，不影响存档。
+    /// </summary>
+    [HarmonyPatch(typeof(GeneratedBuildings), "LoadGeneratedBuildings")]
+    public static class GeneratedBuildings_LoadGeneratedBuildings_Patch
+    {
+        private static bool logged;
+
+        public static void Prefix(ref List<Type> types)
+        {
+            if (types == null || HarmonyEyeAln.Installed)
+            {
+                return;
+            }
+
+            int removed = types.RemoveAll(t => t == typeof(HarmonyEyeConfig));
+            if (removed > 0 && !logged)
+            {
+                logged = true;
+                Debug.Log("[RingCloudTech] 未检测到 ALN，已跳过鸿蒙之眼的建筑注册（移除 " +
+                          removed + " 个配置类型）");
+            }
+        }
+    }
 }
