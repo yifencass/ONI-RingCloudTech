@@ -14,6 +14,8 @@ namespace RingCloudTech
     {
         public const string EFFECT_ID = "DuplicantDrankCola";
         public const string COLA_TAG = "Cola";
+        public const string BLACKCOFFEE_TAG = "BlackCoffee";
+        public const string BLACKCOFFEE_EFFECT_ID = "DuplicantDrankBlackCoffee";
 
         public override void OnLoad(Harmony harmony)
         {
@@ -172,8 +174,16 @@ namespace RingCloudTech
             try { RegisterColaEffect(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 注册效果失败: " + e); }
 
+            try { RegisterBlackCoffeeEffect(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 注册黑咖啡效果失败: " + e); }
+
             try { CustomizeColaElement(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 修正元素失败: " + e); }
+
+            try { CustomizeBlackCoffeeElement(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 修正黑咖啡元素失败: " + e); }
+
+
 
             try { UnlockBeverageMixer(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 解锁建筑失败: " + e); }
@@ -286,6 +296,118 @@ namespace RingCloudTech
             }
         }
 
+        /// <summary>黑咖啡元素的显示名、描述与颜色。</summary>
+        private static void CustomizeBlackCoffeeElement()
+        {
+            Element bc = ElementLoader.FindElementByName(RingCloudTechMod.BLACKCOFFEE_TAG);
+            if (bc == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 未找到 BlackCoffee 元素");
+                return;
+            }
+
+            bc.name = STRINGS.ELEMENTS.BLACKCOFFEE.NAME;
+            bc.description = STRINGS.ELEMENTS.BLACKCOFFEE.DESC;
+
+            if (bc.substance != null)
+            {
+                Color32 deep = new Color32(32, 20, 12, 255);
+                bc.substance.colour = deep;
+                bc.substance.uiColour = deep;
+                bc.substance.conduitColour = new Color32(58, 38, 24, 255);
+            }
+        }
+
+        /// <summary>
+        /// 给自定义液体元素补一个「液滴 prefab」。
+        ///
+        /// 为什么必须补：原版 GeneratedOre.RegisterOreElements 只在
+        ///     element.substance != null && element.substance.anim != null
+        /// 时才 EntityTemplates.CreateLiquidOreEntity + Assets.AddPrefab；
+        /// 而 yaml 注册的 mod 元素在 SubstanceTable 里查不到，ElementLoader
+        /// 只会塞一个 new Substance()（anim / material 全为 null），于是永远没有 prefab。
+        /// 没有 prefab 的后果：Storage.AddLiquid 里 GeneratedOre.CreateChunk 会
+        /// KInstantiate(null) 抛 NRE；ALN 之类按 Assets.GetPrefab 判品类的第三方逻辑
+        /// 会把它当成固体。
+        ///
+        /// 约定：新增自定义液/气体元素时，必须在 Db.Initialize 后调用本方法一次。
+        /// </summary>
+        internal static void EnsureLiquidElementPrefab(string elementId)
+        {
+            Element element = ElementLoader.FindElementByName(elementId);
+            if (element == null)
+            {
+                Debug.LogWarning("[RingCloudTech] prefab 注册跳过：找不到元素 " + elementId);
+                return;
+            }
+
+            if (Assets.GetPrefab(element.tag) != null)
+            {
+                Debug.Log("[RingCloudTech] " + elementId + " 已有 prefab，跳过");
+                return;
+            }
+
+            // 借用原版水的 substance 视觉资源（material / kanim）
+            Element water = ElementLoader.GetElement(SimHashes.Water.CreateTag());
+            if (water == null || water.substance == null || water.substance.anim == null)
+            {
+                Debug.LogWarning("[RingCloudTech] prefab 注册跳过：找不到水的 substance");
+                return;
+            }
+            if (element.substance == null)
+            {
+                Debug.LogWarning("[RingCloudTech] prefab 注册跳过：" + elementId + " 没有 substance");
+                return;
+            }
+
+            element.substance.anim = water.substance.anim;
+            element.substance.material = water.substance.material;
+
+            GameObject go = EntityTemplates.CreateLiquidOreEntity(element.id);
+            if (go == null)
+            {
+                Debug.LogWarning("[RingCloudTech] prefab 注册跳过：CreateLiquidOreEntity 返回 null");
+                return;
+            }
+
+            KBatchedAnimController kbac = go.GetComponent<KBatchedAnimController>();
+            if (kbac != null)
+            {
+                kbac.TintColour = element.substance.colour;
+            }
+
+            Assets.AddPrefab(go.GetComponent<KPrefabID>());
+            Debug.Log("[RingCloudTech] 已注册 " + elementId + " 的液滴 prefab");
+        }
+
+        /// <summary>黑咖啡的饮用效果：+100 体力/周期，+15 压力/周期，+4 运动。</summary>
+        private static void RegisterBlackCoffeeEffect()
+        {
+            if (Db.Get().effects.Exists(RingCloudTechMod.BLACKCOFFEE_EFFECT_ID))
+            {
+                return;
+            }
+
+            Effect effect = new Effect(
+                id: RingCloudTechMod.BLACKCOFFEE_EFFECT_ID,
+                name: "黑咖啡",
+                description: "浓烈的黑咖啡：整夜不困，但也让人心跳加速、心神不宁。",
+                duration: 600f,
+                show_in_ui: true,
+                trigger_floating_text: true,
+                is_bad: false);
+
+            effect.Add(new AttributeModifier(
+                Db.Get().Amounts.Stamina.deltaAttribute.Id, 100f / 600f, "黑咖啡：体力"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Amounts.Stress.deltaAttribute.Id, 15f / 600f, "黑咖啡：压力"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Attributes.Athletics.Id, 4f, "黑咖啡：运动"));
+
+            Db.Get().effects.Add(effect);
+            Debug.Log("[RingCloudTech] 已注册效果 " + RingCloudTechMod.BLACKCOFFEE_EFFECT_ID);
+        }
+
         private static void RegisterColaEffect()
         {
             // 用 Exists 而非 Get：Get 查不到会 LogError，其堆栈会让
@@ -363,6 +485,28 @@ namespace RingCloudTech
             }
         }
     }
+
+    /// <summary>
+    /// 自定义元素的 prefab 必须在这里补：
+    /// Assets.CreatePrefabs 的顺序是  Db.Get()  →  AddPrefab(PrefabAssets)  →  LegacyModMain.Load()  →  Db.PostProcess()。
+    /// 而 EntityTemplates.baseOreTemplate 是在 LegacyModMain.Load() 里才由
+    /// EntityTemplates.CreateBaseOreTemplates() 建出来的，
+    /// 所以放在 Db.Initialize 的 Postfix 里调用 CreateLiquidOreEntity 会
+    /// Object.Instantiate(null) 抛 ArgumentException。
+    /// </summary>
+    [HarmonyPatch(typeof(Assets), "CreatePrefabs")]
+    public static class Assets_CreatePrefabs_Patch
+    {
+        public static void Postfix()
+        {
+            try { Db_Initialize_Patch.EnsureLiquidElementPrefab(RingCloudTechMod.COLA_TAG); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 注册可乐 prefab 失败: " + e); }
+
+            try { Db_Initialize_Patch.EnsureLiquidElementPrefab(RingCloudTechMod.BLACKCOFFEE_TAG); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 注册黑咖啡 prefab 失败: " + e); }
+        }
+    }
+
 
     /// <summary>
     /// 让可乐的 Tag 显示成「可乐」而非「Cola」。
@@ -574,33 +718,41 @@ namespace RingCloudTech
         {
             try
             {
-                Element cola = ElementLoader.FindElementByName(RingCloudTechMod.COLA_TAG);
-                if (cola == null)
-                {
-                    Debug.LogWarning("[RingCloudTech] 未找到 Cola，饮水机不添加");
-                    return;
-                }
-
                 List<Tuple<Tag, string>> options =
                     new List<Tuple<Tag, string>>(WaterCoolerConfig.BEVERAGE_CHOICE_OPTIONS);
 
-                foreach (var o in options)
-                {
-                    if (o.first == cola.tag)
-                    {
-                        return;   // 已存在
-                    }
-                }
+                AddOption(options, ElementLoader.FindElementByName(RingCloudTechMod.COLA_TAG),
+                          RingCloudTechMod.EFFECT_ID);
+                AddOption(options, ElementLoader.FindElementByName(RingCloudTechMod.BLACKCOFFEE_TAG),
+                          RingCloudTechMod.BLACKCOFFEE_EFFECT_ID);
 
-                options.Add(new Tuple<Tag, string>(cola.tag, RingCloudTechMod.EFFECT_ID));
                 WaterCoolerConfig.BEVERAGE_CHOICE_OPTIONS = options.ToArray();
-
-                Debug.Log("[RingCloudTech] 饮水机已支持可乐");
             }
             catch (Exception e)
             {
                 Debug.LogError("[RingCloudTech] 扩展饮水机失败: " + e);
             }
+        }
+
+        /// <summary>元素存在且尚未登记时，追加一条饮品选项。</summary>
+        private static void AddOption(List<Tuple<Tag, string>> options, Element element, string effectId)
+        {
+            if (element == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 饮品元素不存在，跳过");
+                return;
+            }
+
+            foreach (var o in options)
+            {
+                if (o.first == element.tag)
+                {
+                    return;
+                }
+            }
+
+            options.Add(new Tuple<Tag, string>(element.tag, effectId));
+            Debug.Log("[RingCloudTech] 饮水机新增饮品 " + element.tag);
         }
     }
 
@@ -615,39 +767,59 @@ namespace RingCloudTech
         {
             try
             {
-                Element cola = ElementLoader.FindElementByName(RingCloudTechMod.COLA_TAG);
-                if (cola == null || __result == null)
+                if (__result == null)
                 {
                     return;
                 }
 
-                for (int i = 0; i < __result.Length; i++)
-                {
-                    if (__result[i].tag != cola.tag)
-                    {
-                        continue;
-                    }
+                FixOption(__result, RingCloudTechMod.COLA_TAG, STRINGS.ELEMENTS.COLA.NAME,
+                          STRINGS.ELEMENTS.COLA.DESC, RingCloudTechMod.EFFECT_ID, "COLA");
 
-                    __result[i].labelText =
-                        string.IsNullOrEmpty(cola.name)
-                            ? STRINGS.ELEMENTS.COLA.NAME
-                            : cola.name;
-
-                    string tip = UI.FormatAsLink(__result[i].labelText, "COLA")
-                               + "\n" + STRINGS.ELEMENTS.COLA.DESC;
-
-                    Effect effect = Db.Get().effects.Get(RingCloudTechMod.EFFECT_ID);
-                    if (effect != null)
-                    {
-                        tip += "\n\n" + Effect.CreateTooltip(effect, showDuration: true);
-                    }
-                    __result[i].tooltipText = tip;
-                    break;
-                }
+                FixOption(__result, RingCloudTechMod.BLACKCOFFEE_TAG, STRINGS.ELEMENTS.BLACKCOFFEE.NAME,
+                          STRINGS.ELEMENTS.BLACKCOFFEE.DESC, RingCloudTechMod.BLACKCOFFEE_EFFECT_ID,
+                          "BLACKCOFFEE");
             }
             catch (Exception e)
             {
                 Debug.LogError("[RingCloudTech] 修正饮水机文本失败: " + e);
+            }
+        }
+
+        /// <summary>重写某一条饮品选项的标题与 tooltip。</summary>
+        private static void FixOption(
+            FewOptionSideScreen.IFewOptionSideScreen.Option[] result,
+            string elementId,
+            LocString fallbackName,
+            LocString description,
+            string effectId,
+            string linkId)
+        {
+            Element element = ElementLoader.FindElementByName(elementId);
+            if (element == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                if (result[i].tag != element.tag)
+                {
+                    continue;
+                }
+
+                result[i].labelText =
+                    string.IsNullOrEmpty(element.name) ? fallbackName : element.name;
+
+                string tip = UI.FormatAsLink(result[i].labelText, linkId)
+                           + "\n" + description;
+
+                Effect effect = Db.Get().effects.Get(effectId);
+                if (effect != null)
+                {
+                    tip += "\n\n" + Effect.CreateTooltip(effect, showDuration: true);
+                }
+                result[i].tooltipText = tip;
+                return;
             }
         }
     }

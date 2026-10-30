@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using HarmonyLib;
 using Klei.AI;
 using STRINGS;
@@ -35,6 +35,11 @@ namespace RingCloudTech
         /// </summary>
         public static bool RegisterTypeOnly(ResearchTypes types)
         {
+            // 总开关关掉时，连研究类型都不注册——否则研究界面仍会多出一条「生物学研究」研究条。
+            if (!ENABLED)
+            {
+                return false;
+            }
             if (types == null)
             {
                 return false;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -108,6 +109,7 @@ namespace RingCloudTech
 
             object diseaseSet = Db.Get().Diseases;
             int patched = 0;
+            List<string> names = new List<string>();
             if (diseaseSet != null)
             {
 
@@ -116,6 +118,11 @@ namespace RingCloudTech
                     if (!typeof(Disease).IsAssignableFrom(field.FieldType)) continue;
                     Disease disease = field.GetValue(diseaseSet) as Disease;
                     if (disease == null) continue;
+                    // 只对目标病菌生效：食物中毒 / 粘液肺 / 僵尸孢子。
+                    // 按 Database.Diseases 的字段名判定（FoodGerms / SlimeGerms / ZombieSpores）——
+                    // 不能拿 disease.id.ToString() 比，HashedString 转出来不是原字符串。
+                    // 放射污染物（RadiationPoisoning）、花香（PollenGerms）不在此列。
+                    if (!IsTargetDisease(field.Name)) continue;
 
                     if (disease.growthRules == null) disease.growthRules = new List<GrowthRule>();
                     AddDisinfectantRule(disease, saltWater, disease.elemGrowthInfo);
@@ -123,12 +130,28 @@ namespace RingCloudTech
                     AddDisinfectantRule(disease, copper, disease.elemGrowthInfo);
                     AddDisinfectantRule(disease, cuprite, disease.elemGrowthInfo);
                     patched++;
+                    names.Add(field.Name);
                 }
             }
-            Debug.Log("[RingCloudTech] 盐水/浓盐水/铜/铜矿已登记为灭菌物，共 " + patched + " 种疾病");
+            Debug.Log("[RingCloudTech] 盐水/浓盐水/铜/铜矿已登记为灭菌物，覆盖 " + patched + " 种目标病菌: " + string.Join(", ", names.ToArray()));
 
             elementRulesApplied = true;
 
+        }
+
+        /// <summary>只有这三种病菌会被盐水/浓盐水/铜/铜矿杀灭（Database.Diseases 里的字段名）。</summary>
+        private static readonly string[] TargetDiseaseFields =
+        {
+            "FoodGerms", "SlimeGerms", "ZombieSpores"
+        };
+
+        private static bool IsTargetDisease(string fieldName)
+        {
+            for (int i = 0; i < TargetDiseaseFields.Length; i++)
+            {
+                if (string.Equals(fieldName, TargetDiseaseFields[i], StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
         }
 
         private static bool scanDisabled;

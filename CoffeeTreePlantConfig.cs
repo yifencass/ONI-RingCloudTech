@@ -111,11 +111,7 @@ namespace RingCloudTech
 
             // 不施肥：刻意省略 ExtendPlantToFertilizable
 
-            // 收获时额外掉落木材（咖啡树大部分时间在长木质茎）
-            plant.AddOrGet<CoffeeTreeWoodYield>();
 
-            // 收获时额外掉落木材
-            plant.AddOrGet<CoffeeTreeWoodYield>();
 
             plant.AddOrGet<StandardCropPlant>();
             plant.AddOrGet<LoopingSounds>();

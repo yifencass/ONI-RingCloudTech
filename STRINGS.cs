@@ -1,4 +1,4 @@
-﻿namespace RingCloudTech
+namespace RingCloudTech
 {
     /// <summary>
     /// 所有可翻译文本。默认值为英文，中文由 translations/zh.po 覆盖。
@@ -16,6 +16,13 @@
                 public static LocString NAME = "Cola";
                 public static LocString DESC =
                     "A caffeine-rich carbonated drink. Loaded with sucrose, so you'll need to eat less.";
+            }
+
+            public static class BLACKCOFFEE
+            {
+                public static LocString NAME = "黑咖啡";
+                public static LocString DESC =
+                    "通过咖啡豆冲泡的黑咖啡，与浓缩咖啡不同，他的味道绝对算不上好的\n但是复制人饮用后就不用睡觉了，如果能处理后黑咖啡带来的压力，他将是个不错的消遣液体";
             }
         }
 

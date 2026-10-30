@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using STRINGS;
 using TUNING;
@@ -31,26 +31,49 @@ namespace RingCloudTech
                 return;
             }
 
-            bool shouldPause = !fabricator.HasAnyOrder;
-            if (initialized && shouldPause == lastPaused)
-            {
-                return;
-            }
-            initialized = true;
-            lastPaused = shouldPause;
-
             if (deliveries == null)
             {
                 deliveries = GetComponents<ManualDeliveryKG>();
             }
+            if (deliveries == null || deliveries.Length == 0)
+            {
+                return;
+            }
+
+            // 收集「当前排队配方」真正需要的原料标签。
+            // 只判断有没有配方是不够的：排了黑咖啡配方时，
+            // 火椒粒/蔗糖的搬运组件同样会被唤醒，复制人就会白搬。
+            HashSet<Tag> needed = null;
+            if (fabricator.HasAnyOrder)
+            {
+                needed = new HashSet<Tag>();
+                ComplexRecipe[] all = fabricator.GetRecipes();
+                if (all != null)
+                {
+                    for (int i = 0; i < all.Length; i++)
+                    {
+                        ComplexRecipe recipe = all[i];
+                        if (recipe == null || !fabricator.IsRecipeQueued(recipe))
+                        {
+                            continue;
+                        }
+                        foreach (ComplexRecipe.RecipeElement ing in recipe.ingredients)
+                        {
+                            needed.Add(ing.material);
+                        }
+                    }
+                }
+            }
+
             foreach (ManualDeliveryKG d in deliveries)
             {
                 if (d == null)
                 {
                     continue;
                 }
+                bool shouldPause = needed == null || !needed.Contains(d.RequestedItemTag);
                 d.allowPause = true;   // 同时允许玩家在面板手动开关
-                d.Pause(shouldPause, "BeverageMixer: no queued recipe");
+                d.Pause(shouldPause, "BeverageMixer: no queued recipe needs this");
             }
         }
     }
@@ -72,6 +95,22 @@ namespace RingCloudTech
         public const float SPICE_MASS = 0.91f;     // 原 4.55 降到 1/5
         public const float SUCROSE_MASS = 14.54f;
         public const float COLA_MASS = 100f;
+
+        // ───── 咖啡系配方 ─────
+        // 咖啡可乐：水 161 + 咖啡豆 1 + CO2 5 + 蔗糖 33 = 200
+        public const float COFFEECOLA_WATER = 161f;
+        public const float COFFEECOLA_BEAN = 1f;
+        public const float COFFEECOLA_SUCROSE = 33f;
+        public const float COFFEECOLA_CO2 = 5f;
+        public const float COFFEECOLA_MASS = 200f;
+
+        // 黑咖啡：水 98 + 咖啡豆 2 = 100
+        public const float BLACKCOFFEE_WATER = 98f;
+        public const float BLACKCOFFEE_BEAN = 2f;
+        public const float BLACKCOFFEE_MASS = 100f;
+
+        /// <summary>黑咖啡元素 id（对应 elements/blackcoffee.yaml）。</summary>
+        public const string BLACKCOFFEE_TAG = "BlackCoffee";
 
         // ───── 配方时间 ─────
         // 本体复用 sodamaker_kanim，ComplexFabricator 的动画时序是：
@@ -193,6 +232,15 @@ namespace RingCloudTech
             sucrose.MinimumMass = SUCROSE_MASS;
             sucrose.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
 
+            // 咖啡豆搬运（咖啡可乐与黑咖啡共用）
+            ManualDeliveryKG bean = go.AddComponent<ManualDeliveryKG>();
+            bean.SetStorage(fabricator.inStorage);
+            bean.RequestedItemTag = new Tag(CoffeeTreeRegistrar.BEAN_ID);
+            bean.capacity = 40f;
+            bean.refillMass = 10f;
+            bean.MinimumMass = COFFEECOLA_BEAN;
+            bean.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
+
             ConfigureRecipes();
             Prioritizable.AddRef(go);
         }
@@ -246,6 +294,75 @@ namespace RingCloudTech
             };
 
             Debug.Log("[RingCloudTech] 已注册配方 " + recipeId);
+
+            // ───── 咖啡可乐：水 165 + 咖啡豆 1 + 蔗糖 34 → 可乐 200 ─────
+            Tag beanTag = new Tag(CoffeeTreeRegistrar.BEAN_ID);
+            RegisterMeltedRecipe(
+                new ComplexRecipe.RecipeElement[]
+                {
+                    new ComplexRecipe.RecipeElement(waterTag, COFFEECOLA_WATER),
+                    new ComplexRecipe.RecipeElement(beanTag, COFFEECOLA_BEAN),
+                    new ComplexRecipe.RecipeElement(co2Tag, COFFEECOLA_CO2),
+                    new ComplexRecipe.RecipeElement(sucroseTag, COFFEECOLA_SUCROSE),
+                },
+                cola.tag, COFFEECOLA_MASS, cola.tag.ToString(),
+                "可乐",
+                "以咖啡豆替代火椒粒的可乐，焦香更重。");
+
+            // ───── 黑咖啡：水 98 + 咖啡豆 2 → 黑咖啡 100 ─────
+            Element blackCoffee = ElementLoader.FindElementByName(BLACKCOFFEE_TAG);
+            if (blackCoffee == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 未找到 BlackCoffee 元素，跳过黑咖啡配方");
+            }
+            else
+            {
+                RegisterMeltedRecipe(
+                    new ComplexRecipe.RecipeElement[]
+                    {
+                        new ComplexRecipe.RecipeElement(waterTag, BLACKCOFFEE_WATER),
+                        new ComplexRecipe.RecipeElement(beanTag, BLACKCOFFEE_BEAN),
+                    },
+                    blackCoffee.tag, BLACKCOFFEE_MASS, BLACKCOFFEE_TAG,
+                    "黑咖啡",
+                    "98 kg 水加 2 kg 咖啡豆冲泡而成，苦味浓烈，但足够撑起一个通宵。");
+            }
+        }
+
+        /// <summary>
+        /// 注册一条「产物是纯元素」的配方：必须用 Melted，
+        /// AverageTemperature/Heated 分支会 Assets.GetPrefab + KInstantiate，元素没有 prefab。
+        /// </summary>
+        private static void RegisterMeltedRecipe(
+            ComplexRecipe.RecipeElement[] inputs,
+            Tag product,
+            float productMass,
+            string spritePrefabId,
+            string displayName,
+            string description)
+        {
+            ComplexRecipe.RecipeElement[] outputs =
+            {
+                new ComplexRecipe.RecipeElement(
+                    product, productMass,
+                    ComplexRecipe.RecipeElement.TemperatureOperation.Melted,
+                    storeElement: true),
+            };
+
+            string id = ComplexRecipeManager.MakeRecipeID(ID, inputs, outputs);
+
+            new ComplexRecipe(id, inputs, outputs)
+            {
+                time = RECIPE_TIME,
+                description = description,
+                fabricators = new List<Tag> { TagManager.Create(ID) },
+                sortOrder = 120,
+                nameDisplay = ComplexRecipe.RecipeNameDisplay.Custom,
+                customName = displayName,
+                customSpritePrefabID = spritePrefabId,
+            };
+
+            Debug.Log("[RingCloudTech] 已注册配方 " + id + " (" + displayName + ")");
         }
 
         public override void DoPostConfigureComplete(GameObject go)
