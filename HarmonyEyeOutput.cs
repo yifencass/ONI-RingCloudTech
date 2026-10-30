@@ -1,3 +1,4 @@
+using System;
 using KSerialization;
 using UnityEngine;
 
@@ -33,6 +34,41 @@ namespace RingCloudTech
         private float lastFullLogTime;
         private bool loggedFull;
 
+        // ── 滞留量状态条目 ──
+        private KSelectable selectable;
+        private StatusItem pendingStatus;
+        private Guid pendingGuid = Guid.Empty;
+
+        protected override void OnSpawn()
+        {
+            base.OnSpawn();
+
+            selectable = GetComponent<KSelectable>();
+            pendingStatus = new StatusItem(
+                "HARMONYEYE_PENDING", "BUILDING", "",
+                StatusItem.IconType.Info, NotificationType.Neutral,
+                false, OverlayModes.None.ID,
+                true, StatusItem.ALL_OVERLAYS, PendingText);
+
+            UpdatePendingStatus();
+        }
+
+        private void UpdatePendingStatus()
+        {
+            if (selectable == null)
+            {
+                return;
+            }
+
+            pendingGuid = selectable.ToggleStatusItem(pendingStatus, pendingGuid, PendingMass > 0.5f, null);
+        }
+
+        private string PendingText(string _, object __)
+        {
+            return GameUtil.GetFormattedMass(PendingMass, GameUtil.TimeSlice.None,
+                GameUtil.MetricMassFormat.UseThreshold, true, "{0:0.#}");
+        }
+
         /// <summary>产物入队，由 SpawnOrderProduct 补丁调用。</summary>
         public void Enqueue(Element element, float mass, float temp)
         {
@@ -51,6 +87,7 @@ namespace RingCloudTech
                     queueMasses[i] += mass;
                     queueTemps[i] = temp;
                     PendingMass += mass;
+                    UpdatePendingStatus();
                     return;
                 }
             }
@@ -68,6 +105,7 @@ namespace RingCloudTech
             queueMasses = masses;
             queueTemps = temps;
             PendingMass += mass;
+            UpdatePendingStatus();
         }
 
         public void Sim1000ms(float dt)
@@ -161,6 +199,8 @@ namespace RingCloudTech
             {
                 loggedFull = false;
             }
+
+            UpdatePendingStatus();
         }
 
         private void RemoveAt(int index)

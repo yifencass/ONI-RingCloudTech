@@ -20,6 +20,21 @@ namespace RingCloudTech
         public override void OnLoad(Harmony harmony)
         {
             base.OnLoad(harmony);
+
+            // 鸿蒙之眼「产品滞留」状态条目文案。
+            // 用 (key, 文本) 重载：单参 LocString 重载只填一种语言的槽位，
+            // 会在 StringTable.Add 里越界（历史崩溃）。
+            try
+            {
+                Strings.Add("STRINGS.BUILDING.STATUSITEMS.HARMONYEYE_PENDING.NAME", "产品滞留");
+                Strings.Add("STRINGS.BUILDING.STATUSITEMS.HARMONYEYE_PENDING.TOOLTIP",
+                    "频道空间不足，产物暂存在建筑内部。接入更多存储单元或清空频道后会自动继续输出。");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 注册状态条本文案失败: " + e);
+            }
+
             try
             {
                 ModUtil.AddBuildingToPlanScreen("Food", BeverageMixerConfig.ID);
