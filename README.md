@@ -106,7 +106,7 @@ output_rate = 5000    # 每秒最多往 ALN 频道推多少 kg 产物
 
 | 渠道 | 稳定性 | 说明 |
 |---|---|---|
-| **Steam 创意工坊** | 稳定版 | 尚未发布，敬请期待 |
+| **Steam 创意工坊** | 稳定版 | 打包脚本产物，见下方「创意工坊打包」 |
 | **本仓库（自行编译）** | 测试版 | 包含最新改动，**不保证稳定**，适合想尝鲜或帮忙测试的人 |
 
 ### 通过本仓库安装（测试版）
@@ -170,6 +170,35 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 ```
 
 编译产物在 `bin\RingCloudTech.dll`，复制到 mod 目录即可。
+
+## 创意工坊打包
+
+仓库根目录的 `打包创意工坊.ps1` 会编译并整理出一份**只含运行期文件的干净目录**，
+结构与 Steam 创意工坊上的建筑类 mod 一致（`mod.yaml` + `mod_info.yaml` + `preview.png`
++ DLL + `anim/` + `elements/` + `translations/` + 运行时图层目录）：
+
+```powershell
+# 打包到 D:\oni_mod_build\workshop\RingCloudTech（同时生成 zip）
+powershell -NoProfile -ExecutionPolicy Bypass -File .\打包创意工坊.ps1
+
+# 打包并顺手覆盖安装到 mods\Local\RingCloudTech
+powershell -NoProfile -ExecutionPolicy Bypass -File .\打包创意工坊.ps1 -Install
+
+# 升版本号（同时改写 mod_info.yaml）
+powershell -NoProfile -ExecutionPolicy Bypass -File .\打包创意工坊.ps1 -Version 1.0.1
+```
+
+产物：
+
+| 路径 | 说明 |
+|---|---|
+| `D:\oni_mod_build\workshop\RingCloudTech\` | 可直接上传/直接放进 `mods\Local` 的内容目录 |
+| `D:\oni_mod_build\workshop\RingCloudTech_v<版本>.zip` | 备份与分发用压缩包 |
+| 包内 `preview.png` | 创意工坊封面（1280×720，脚本用当前建筑美术实时合成） |
+
+脚本剔除的内容：`_assets/`（Klei 版权素材与 SVG 母版）、`sp_editor/`、`_archive/`、
+全部 `.cs` 源码与 `.csproj`、构建中间产物。**注意 `harmonyeye.cfg` 会原样带入包内**，
+发布前确认里面的 `recipe_time` 是正式值（默认 1800），不要带调试值 60。
 
 ## 项目结构
 
