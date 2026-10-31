@@ -1,4 +1,4 @@
-﻿msgctxt "STRINGS.ELEMENTS.COLA.NAME"
+msgctxt "STRINGS.ELEMENTS.COLA.NAME"
 msgid "Cola"
 msgstr "Cola"
 
@@ -180,3 +180,14 @@ msgstr "A rail drawn from neutronium. It moves loads that would shear an ordinar
 msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMSOLIDCONDUIT.EFFECT"
 msgid "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each."
 msgstr "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each."
+msgctxt "STRINGS.BUILDINGS.PREFABS.TIMEBOW.NAME"
+msgid "Time Bow"
+msgstr "Time Bow"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.TIMEBOW.DESC"
+msgid "Give time to matter, and it yields immense clean power. Because of an improper operation our \"homeland\" was blasted apart; for safety, it refuses to work unless helium is fed in, and while working it produces a special substance - neutronium."
+msgstr "Give time to matter, and it yields immense clean power. Because of an improper operation our \"homeland\" was blasted apart; for safety, it refuses to work unless helium is fed in, and while working it produces a special substance - neutronium."
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.TIMEBOW.EFFECT"
+msgid "Generates <b>800 W</b> of Power.\n\nConsumes <b>30 kg</b> of <b>Helium</b> per cycle.\n\nProduces <b>500 kg</b> of <b>Neutronium</b> per cycle from its right edge.\n\nEmits no heat."
+msgstr "Generates <b>800 W</b> of Power.\n\nConsumes <b>30 kg</b> of <b>Helium</b> per cycle.\n\nProduces <b>500 kg</b> of <b>Neutronium</b> per cycle from its right edge.\n\nEmits no heat."

@@ -88,6 +88,35 @@ namespace RingCloudTech
                     public static LocString EFFECT =
                         "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each.";
                 }
+
+                public static class TIMEBOW
+                {
+                    public static LocString NAME = "Time Bow";
+                    public static LocString DESC =
+                        "Give time to matter, and it yields immense clean power. Because of an improper operation our \"homeland\" was blasted apart; for safety, it refuses to work unless helium is fed in, and while working it produces a special substance - neutronium.";
+                    public static LocString EFFECT =
+                        "Generates <b>800 W</b> of Power.\n\nConsumes <b>30 kg</b> of <b>Helium</b> per cycle.\n\nProduces <b>500 kg</b> of <b>Neutronium</b> per cycle from its right edge.\n\nEmits no heat.";
+                }
+            }
+        }
+
+        public static class RESEARCH
+        {
+            public static class TECHS
+            {
+                public static class PASSIVEENERGY
+                {
+                    public static LocString NAME = "Passive Energy";
+                    public static LocString DESC =
+                        "Draw power out of processes that were never meant to be harnessed. Nothing burns, nothing decays - the current simply arrives.";
+                }
+
+                public static class POCKETUNIVERSE
+                {
+                    public static LocString NAME = "Pocket Universe";
+                    public static LocString DESC =
+                        "Fold a universe small enough to fit inside a machine. Feeding it matter is optional; feeding it neutronium is not.";
+                }
             }
         }
 

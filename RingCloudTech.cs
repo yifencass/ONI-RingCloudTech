@@ -48,6 +48,7 @@ namespace RingCloudTech
             {
                 // 放进电力 → 电池子类
                 ModUtil.AddBuildingToPlanScreen("Power", SuperCapacitorConfig.ID, "batteries");
+                Db_Initialize_Patch.RegisterSubcategorySorting(SuperCapacitorConfig.ID, "batteries");
 
                 // 鸿蒙之眼：软依赖 ALN。没有 ALN 就没有氢源也没有产物出口，
                 // 建出来也只是个不工作的空壳，索性不进建造菜单。
@@ -63,6 +64,22 @@ namespace RingCloudTech
             catch (Exception e)
             {
                 Debug.LogError("[RingCloudTech] 注册超级电容库到建造菜单失败: " + e);
+            }
+
+            try
+            {
+                // 时间之弓：800 W 氦气发电机，惰性产物中子质从右侧 O 格排出
+                ModUtil.AddBuildingToPlanScreen("Power", TimeBowConfig.ID, "generators");
+
+                // AddBuildingToPlanScreen 只决定「进哪个子类」，建造菜单给按钮分组的
+                // 子类归属还得补一张 PLANSUBCATEGORYSORTING 表，否则游戏会刷
+                // "has not been added to plan screen subcategory organization" 警告，
+                // 按钮也会落到 uncategorized 分组里。
+                Db_Initialize_Patch.RegisterSubcategorySorting(TimeBowConfig.ID, "generators");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[RingCloudTech] 注册时间之弓到建造菜单失败: " + e);
             }
 
             try
@@ -175,6 +192,96 @@ namespace RingCloudTech
                 Debug.LogError("[RingCloudTech] 后备补动画失败: " + e);
             }
         }
+
+        /// <summary>
+        /// 时间之弓的固体产物是「中子质（Unobtanium）」。
+        ///
+        /// 原版 LoadGeneratedOre 只在两种情况下给元素注册可落地物件 prefab：
+        ///   1) 该元素有 IOreConfig 实现；或
+        ///   2) element.substance.anim 非空（走 EntityTemplates.CreateSolidOreEntity）。
+        /// 中子质两者都不满足（它只作地图边界/遗迹砖出现），于是 Assets.GetPrefab("Unobtanium")
+        /// 为空，Substance.SpawnResource 会在 KInstantiate(null) 处抛异常。
+        ///
+        /// 所以在原版跑完之后补一次：缺了就照原版兜底分支的写法造一个固体物件。
+        /// 必须在此刻（LegacyModMain.Load 的 LoadOre 阶段）做 —— 这时
+        /// EntityTemplates.CreateBaseOreTemplates() 已就绪、DestroyBaseOreTemplates() 还没调。
+        /// </summary>
+        public static void Postfix()
+        {
+            try
+            {
+                EnsureUnobtaniumOrePrefab();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 中子质物件兜底注册失败: " + e);
+            }
+        }
+
+        /// <summary>退用动画的参照元素：铁矿石，原版必然有自己的固体 chunk 美术。</summary>
+        private static readonly SimHashes UNOBTANIUM_ANIM_FALLBACK = SimHashes.IronOre;
+
+        private static void EnsureUnobtaniumOrePrefab()
+        {
+            Element element = ElementLoader.FindElementByHash(SimHashes.Unobtanium);
+            if (element == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 找不到 Unobtanium（中子质）元素，跳过物件兜底注册");
+                return;
+            }
+
+            // 原版（或其它 mod）已经注册过就什么都不做
+            if (Assets.TryGetPrefab(element.tag) != null)
+            {
+                return;
+            }
+
+            GameObject go = EntityTemplates.CreateSolidOreEntity(SimHashes.Unobtanium, null);
+            if (go == null)
+            {
+                Debug.LogWarning("[RingCloudTech] Unobtanium 物件创建失败");
+                return;
+            }
+
+            // 美术兜底：substance 没有 anim 时 CreateOreEntity 会把 null 塞进
+            // KBatchedAnimController.AnimFiles，实例化会出错；换成铁矿石的 chunk 动画并染色。
+            KBatchedAnimController anim = go.GetComponent<KBatchedAnimController>();
+            if (anim != null)
+            {
+                bool hasAnim = anim.AnimFiles != null && anim.AnimFiles.Length > 0 && anim.AnimFiles[0] != null;
+                if (!hasAnim)
+                {
+                    Element fallback = ElementLoader.FindElementByHash(UNOBTANIUM_ANIM_FALLBACK);
+                    KAnimFile fallbackAnim = fallback != null && fallback.substance != null ? fallback.substance.anim : null;
+                    if (fallbackAnim != null)
+                    {
+                        anim.AnimFiles = new KAnimFile[1] { fallbackAnim };
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[RingCloudTech] 找不到可退用的固体 chunk 动画，中子质物件可能不可见");
+                    }
+                }
+
+                // 染色：中子质的 substance 可能是 ElementLoader 兜底 new 出来的空 Substance，
+                // 它的 colour 是默认 (0,0,0,0)（alpha=0 会让物件直接看不见）。
+                // 空色时退回铁矿石的颜色，再不行给一个中性灰。
+                Color32 tint = element.substance != null ? element.substance.colour : default(Color32);
+                if (tint.a == 0)
+                {
+                    Element tintSource = ElementLoader.FindElementByHash(UNOBTANIUM_ANIM_FALLBACK);
+                    tint = tintSource != null && tintSource.substance != null ? tintSource.substance.colour : default(Color32);
+                    if (tint.a == 0)
+                    {
+                        tint = new Color32(150, 150, 160, 255);
+                    }
+                }
+                anim.TintColour = tint;
+            }
+
+            Assets.AddPrefab(go.GetComponent<KPrefabID>());
+            Debug.Log("[RingCloudTech] 已为 Unobtanium（中子质）注册可落地固体物件 prefab，时间之弓的固体产物可正常生成");
+        }
     }
 
     /// <summary>
@@ -205,6 +312,10 @@ namespace RingCloudTech
 
             try { UnlockSuperCapacitor(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 解锁超级电容库失败: " + e); }
+
+            // 时间之弓 / 鸿蒙之眼不再挂在原版科技上，改为自建科技节点（无源能源 / 口袋宇宙）
+            try { CustomTechs.Install(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 自建科技失败: " + e); }
 
             try { RepairMissingSubstanceAnims(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 修复缺失液滴动画失败: " + e); }
@@ -483,13 +594,13 @@ namespace RingCloudTech
                 return;
             }
             AddUnlock(tech, SuperCapacitorConfig.ID);
+            // 鸿蒙之眼已改挂自建科技「口袋宇宙」，这里不再重复解锁。
+        }
 
-            // 鸿蒙之眼依赖 ALN 才能运转，没装 ALN 时不进科技树。
-            if (HarmonyEyeAln.Installed)
-            {
-                AddUnlock(tech, HarmonyEyeConfig.ID);
-            }
-
+        [Obsolete("时间之弓改为自建科技「无源能源」，见 CustomTechs.Install()")]
+        private static void UnlockTimeBow()
+        {
+            CustomTechs.Install();
         }
 
         private static void AddUnlock(Tech tech, string id)
@@ -497,6 +608,27 @@ namespace RingCloudTech
             if (!tech.unlockedItemIDs.Contains(id))
             {
                 tech.AddUnlockedItemIDs(id);
+            }
+        }
+
+        /// <summary>
+        /// 建造菜单按钮的分组归属：ModUtil.AddBuildingToPlanScreen 只负责把建筑塞进某个子类列表，
+        /// PlanBuildingToggle 生成按钮时还会查 TUNING.BUILDINGS.PLANSUBCATEGORYSORTING，
+        /// 查不到就退化成 uncategorized 并刷警告。
+        /// </summary>
+        internal static void RegisterSubcategorySorting(string buildingId, string subcategory)
+        {
+            try
+            {
+                Dictionary<string, string> table = TUNING.BUILDINGS.PLANSUBCATEGORYSORTING;
+                if (table != null)
+                {
+                    table[buildingId] = subcategory;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 注册建造菜单子类归属失败 " + buildingId + ": " + e.Message);
             }
         }
     }
@@ -1120,6 +1252,40 @@ namespace RingCloudTech
                 Debug.Log("[RingCloudTech] 未检测到 ALN，已跳过鸿蒙之眼的建筑注册（移除 " +
                           removed + " 个配置类型）");
             }
+        }
+    }
+
+    /// <summary>
+    /// 时间之弓没有 ManualDeliveryKG（氦气走气体管道，不需要小人送料），
+    /// 但 EnergyGenerator 本身实现了 ISingleSliderControl（原版发电机用它调「补充燃料百分比」）。
+    ///
+    /// 原版 SingleSliderSideScreen 只按预制体名字黑名单排除了氢气/甲烷/石油/开发者发电机，
+    /// 我们的建筑不在名单里 → 选中它就弹出那个滑块，而 EnergyGenerator.GetSliderTooltip
+    /// 会去 GetComponent&lt;ManualDeliveryKG&gt;() 并直接解引用 → NullReferenceException，
+    /// 整个详情面板刷新时崩溃。
+    ///
+    /// 这里把所有「带 EnergyGenerator 但没有 ManualDeliveryKG」的建筑统一排除在滑块侧屏之外，
+    /// 比往黑名单里加 prefab 名更通用。
+    /// </summary>
+    [HarmonyPatch(typeof(SingleSliderSideScreen), "IsValidForTarget")]
+    public static class SingleSliderSideScreen_IsValidForTarget_Patch
+    {
+        public static bool Prefix(GameObject target, ref bool __result)
+        {
+            try
+            {
+                if (target != null && target.GetComponent<EnergyGenerator>() != null &&
+                    target.GetComponent<ManualDeliveryKG>() == null)
+                {
+                    __result = false;
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return true;
         }
     }
 }

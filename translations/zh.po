@@ -179,3 +179,31 @@ msgstr "用中子质拉制的轨道，能运送会把普通运输轨道扯断的
 msgctxt "STRINGS.BUILDINGS.PREFABS.NEUTRONIUMSOLIDCONDUIT.EFFECT"
 msgid "Carries <b>Solid</b> materials between buildings.\n\nMoves objects of up to <b>10 t</b> each."
 msgstr "在建筑之间输送<b>固体</b>。\n\n可运送单件重达 <b>10 吨</b> 的物品。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.TIMEBOW.NAME"
+msgid "Time Bow"
+msgstr "时间之弓"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.TIMEBOW.DESC"
+msgid "Give time to matter, and it yields immense clean power. Because of an improper operation our \"homeland\" was blasted apart; for safety, it refuses to work unless helium is fed in, and while working it produces a special substance - neutronium."
+msgstr "给时间以物质，生产出大量的清洁能源。因为不当操作，我们的“故乡”已被炸毁；为了安全，必须输入氦气才允许工作，工作时会产出特殊物质——中子质。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.TIMEBOW.EFFECT"
+msgid "Generates <b>800 W</b> of Power.\n\nConsumes <b>30 kg</b> of <b>Helium</b> per cycle.\n\nProduces <b>500 kg</b> of <b>Neutronium</b> per cycle from its right edge.\n\nEmits no heat."
+msgstr "产生 <b>800 瓦</b>电力。\n\n每周期消耗 <b>30 千克</b> <b>氦气</b>。\n\n每周期从右边缘产出 <b>500 千克</b> <b>中子质</b>。\n\n不产生热量。"
+
+msgctxt "STRINGS.RESEARCH.TECHS.PASSIVEENERGY.NAME"
+msgid "Passive Energy"
+msgstr "无源能源"
+
+msgctxt "STRINGS.RESEARCH.TECHS.PASSIVEENERGY.DESC"
+msgid "Draw power out of processes that were never meant to be harnessed. Nothing burns, nothing decays - the current simply arrives."
+msgstr "从本不该被利用的过程里取电。没有燃烧，没有衰变——电流自己流出来。"
+
+msgctxt "STRINGS.RESEARCH.TECHS.POCKETUNIVERSE.NAME"
+msgid "Pocket Universe"
+msgstr "口袋宇宙"
+
+msgctxt "STRINGS.RESEARCH.TECHS.POCKETUNIVERSE.DESC"
+msgid "Fold a universe small enough to fit inside a machine. Feeding it matter is optional; feeding it neutronium is not."
+msgstr "把一个宇宙折叠到能塞进机器里。喂它物质是可选的，喂它中子质不是。"

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using STRINGS;
 using TUNING;
 using UnityEngine;
@@ -33,7 +33,7 @@ namespace RingCloudTech
 
         // ───── 建筑 ─────
         public const float CONSTRUCTION_TIME = 60f;
-        public const float CONSTRUCTION_MASS = 3200f;
+        public const float CONSTRUCTION_MASS = 1200f;
 
         /// <summary>产热 50 复制热/秒。BuildingDef 里单位是千瓦，1 kW = 1000 DTU/s。</summary>
         public const float SELF_HEAT_KILOWATTS = 0.05f;
