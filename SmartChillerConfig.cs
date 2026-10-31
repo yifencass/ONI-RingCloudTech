@@ -64,8 +64,20 @@ namespace RingCloudTech
         public const float OVERHEAT_TEMPERATURE = 200f + 273.15f;
 
         // ───── 管道 ─────
-        /// <summary>进料速率 kg/s（与 ConduitConsumer.consumptionRate 共用）。</summary>
-        public const float CONSUMPTION_RATE = 10f;
+        /// <summary>
+        /// 进料速率 kg/s（ConduitConsumer.consumptionRate）。
+        /// 原版液冷机是 10；这里放到 1000，让机器不再成为管道吞吐的瓶颈 ——
+        /// 实际进料速度仍受管道本身限制（原版单格 10 kg、每帧一次搬移），
+        /// 也就是说机器「有多少吃多少」，管道能跑多少它就收多少。
+        /// </summary>
+        public const float CONSUMPTION_RATE = 1000f;
+
+        /// <summary>
+        /// 内部缓冲罐容量 kg —— 1 吨的运行窗口。
+        /// 液体先进罐子，SmartChiller 再按 PROCESS_RATE_KG_PER_SECOND 铺开冷却输出，
+        /// 这样上游管道一阵猛灌（或工业革命那种大管径）时机器不会把液体顶回去。
+        /// </summary>
+        public const float BUFFER_CAPACITY_KG = 1000f;
 
         private static readonly List<Storage.StoredItemModifier> StoredItemModifiers =
             new List<Storage.StoredItemModifier>
@@ -150,10 +162,11 @@ namespace RingCloudTech
             ConduitConsumer consumer = go.AddOrGet<ConduitConsumer>();
             consumer.conduitType = ConduitType.Liquid;
             consumer.consumptionRate = CONSUMPTION_RATE;
+            consumer.capacityKG = BUFFER_CAPACITY_KG;
 
             Storage storage = BuildingTemplates.CreateDefaultStorage(go);
             storage.showInUI = true;
-            storage.capacityKg = 2f * consumer.consumptionRate;
+            storage.capacityKg = BUFFER_CAPACITY_KG;
             storage.SetDefaultStoredItemModifiers(StoredItemModifiers);
 
             // 逻辑使能口（T），无信号时按未接线处理 → 正常工作

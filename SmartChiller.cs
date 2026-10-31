@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using KSerialization;
 using STRINGS;
@@ -9,9 +10,11 @@ namespace RingCloudTech
     /// 智能液冷机的核心逻辑：把管道里的液体冷却到「目标温度」，同时兼任温度阈值侧屏
     /// （IThresholdSwitch → ThresholdSwitchSideScreen 会自动给建筑加一个滑块 + 数字输入框）。
     ///
-    /// 与打原本版 AirConditioner 的区别：原版是固定 ΔT（-14 K），这里是「冷却到指定温度」——
+    /// 与原本版 AirConditioner 的区别：原版是固定 ΔT（-14 K），这里是「冷却到指定温度」——
     ///   进液温度 &gt; 目标温度 → 冷却到目标温度再输出（消耗电力）；
     ///   进液温度 ≤ 目标温度 → 原样输出，不降温也不耗电。
+    ///
+    /// 吞吐：缓冲罐 1 吨、进料 1000 kg/s（管道能吃多少吃多少），冷却处理速度 200 kg/s。
     ///
     /// 冷却带走的热量全部灌进建筑自身的结构温度（和原版液冷机一致，不会凭空消失），
     /// 所以机器会越来越热，需要玩家自己给机器降温。
@@ -33,6 +36,14 @@ namespace RingCloudTech
 
         /// <summary>温差小于这个值就认为「已经够冷了」，避免浮点抖动导致反复进出冷却状态。</summary>
         private const float TEMPERATURE_EPSILON = 0.01f;
+
+        /// <summary>
+        /// 每秒最多处理多少 kg 液体。
+        /// 缓冲罐能存 1 吨，但一次把 1 吨全冷掉会让抽出来的热量在一两帧内灌进建筑本体
+        /// （几千 kJ/帧 → 直接冲到过热点），所以把处理速度铺开：200 kg/s 已经远超原版液冷机的 10 kg/s，
+        /// 也高于普通液体管道本身的吞吐，不会成为新的瓶颈。
+        /// </summary>
+        public const float PROCESS_RATE_KG_PER_SECOND = 200f;
 
         /// <summary>
         /// 滑块分段：必须从 0 起连续递增（NonLinearSlider.GetPercentageFromValue 的约定），
@@ -185,8 +196,12 @@ namespace RingCloudTech
 
             bool didCool = false;
             bool didMove = false;
+            List<GameObject> drained = null;
 
-            for (int i = 0; i < storage.items.Count; i++)
+            // 每 tick 的处理预算：缓冲罐里存满 1 吨时也不会一帧全冷掉
+            float budget = PROCESS_RATE_KG_PER_SECOND * dt;
+
+            for (int i = 0; i < storage.items.Count && budget > 0f; i++)
             {
                 GameObject item = storage.items[i];
                 if (item == null)
@@ -208,8 +223,9 @@ namespace RingCloudTech
                     ? Mathf.Max(targetTemperature, OUTPUT_TEMPERATURE_FLOOR)
                     : inputTemperature;
 
+                float want = Mathf.Min(pe.Mass, budget);
                 float moved = Game.Instance.liquidConduitFlow.AddElement(
-                    outputCell, pe.ElementID, pe.Mass, outputTemperature, pe.DiseaseIdx, pe.DiseaseCount);
+                    outputCell, pe.ElementID, want, outputTemperature, pe.DiseaseIdx, pe.DiseaseCount);
 
                 if (moved <= 0f)
                 {
@@ -244,8 +260,29 @@ namespace RingCloudTech
                         BUILDING.STATUSITEMS.OPERATINGENERGY.PIPECONTENTS_TRANSFER, displayDt);
                 }
 
+                if (pe.Mass <= 0.01f && drained == null)
+                {
+                    drained = new List<GameObject>();
+                }
+                if (pe.Mass <= 0.01f)
+                {
+                    drained.Add(item);
+                }
+
+                budget -= moved;
                 didMove = true;
-                break;
+            }
+
+            // 抽空的液体物件交给 Storage 清掉（迭代中不能删，否则会打乱 items 列表）
+            if (drained != null)
+            {
+                for (int i = 0; i < drained.Count; i++)
+                {
+                    if (drained[i] != null)
+                    {
+                        Util.KDestroyGameObject(drained[i]);
+                    }
+                }
             }
 
             cooling = didCool;
