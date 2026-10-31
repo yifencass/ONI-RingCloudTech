@@ -135,6 +135,30 @@ namespace RingCloudTech
             Debug.Log(string.Format(
                 "[RingCloudTech] 智能液冷机就位：目标 {0:0.#} K（{1:0.#} °C），液体出口格={2}",
                 targetTemperature, targetTemperature - 273.15f, outputCell));
+
+            // 一次性核对建造材料（BuildingGasket 是「个数」不是 kg，容易配错）
+            try
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                Recipe recipe = building.Def.CraftRecipe;
+                if (recipe != null && recipe.Ingredients != null)
+                {
+                    for (int i = 0; i < recipe.Ingredients.Count; i++)
+                    {
+                        Recipe.Ingredient ing = recipe.Ingredients[i];
+                        if (i > 0)
+                        {
+                            sb.Append(" + ");
+                        }
+                        sb.AppendFormat("{0} {1:0.#}", ing.tag.ProperName(), ing.amount);
+                    }
+                }
+                Debug.Log("[RingCloudTech] 智能液冷机建造材料：" + sb);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 打印建造材料失败: " + e.Message);
+            }
         }
 
         // ───── 冷却逻辑 ─────

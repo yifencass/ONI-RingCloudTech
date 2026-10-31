@@ -38,11 +38,15 @@ namespace RingCloudTech
         private const float MELTING_POINT = 1600f;
 
         /// <summary>
-        /// 建造材料：精炼金属 1200 kg + 密封圈 200 kg。
+        /// 建造材料：精炼金属 1200 kg + 密封圈 4 个。
         /// Mass 与 MaterialCategory 必须等长且顺序一致 —— BuildingDef.PostProcess
         /// 按 (MaterialCategory[i], Mass[i]) 逐条生成建造配方的 Ingredient。
+        ///
+        /// 注意 "BuildingGasket" 这一项的单位不是 kg 而是「密封圈个数」：
+        /// BuildingLoader.GetEffectiveMass 会把它乘上 RegisterMassPerUnitOverride
+        /// 登记的 50 kg/个 再计入建筑热容，原版脱水机用 2、补水机用 1。
         /// </summary>
-        private static readonly float[] CONSTRUCTION_MASS = { 1200f, 200f };
+        private static readonly float[] CONSTRUCTION_MASS = { 1200f, 4f };
         private static readonly string[] CONSTRUCTION_MATERIALS =
         {
             "RefinedMetal",     // MATERIALS.REFINED_METALS[0]
