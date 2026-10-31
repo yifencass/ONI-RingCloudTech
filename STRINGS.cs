@@ -97,6 +97,15 @@ namespace RingCloudTech
                     public static LocString EFFECT =
                         "Generates <b>800 W</b> of Power.\n\nConsumes <b>30 kg</b> of <b>Helium</b> per cycle.\n\nProduces <b>500 kg</b> of <b>Neutronium</b> per cycle from its right edge.\n\nEmits no heat.";
                 }
+
+                public static class SMARTCHILLER
+                {
+                    public static LocString NAME = "Smart Liquid Chiller";
+                    public static LocString DESC =
+                        "A chiller that reads a number and obeys it. Set the temperature you want coming out, and it holds your coolant there - chilling whatever arrives too warm, and waving through whatever is already cold enough.";
+                    public static LocString EFFECT =
+                        "Cools <b>Liquid</b> down to the <b>target temperature</b> shown on its display.\n\nConsumes <b>1800 W</b> of Power while chilling.\n\nLiquid that is already at or below the target passes through untouched, using no power.\n\nHeat removed from the liquid is dumped into the building itself.";
+                }
             }
         }
 

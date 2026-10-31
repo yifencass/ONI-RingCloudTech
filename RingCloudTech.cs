@@ -84,6 +84,17 @@ namespace RingCloudTech
 
             try
             {
+                // 智能液冷机：4×3，冷却到目标温度。放到 公用 → 温度 子类（原版液冷机同款）
+                ModUtil.AddBuildingToPlanScreen("Utilities", SmartChillerConfig.ID, "temperature");
+                Db_Initialize_Patch.RegisterSubcategorySorting(SmartChillerConfig.ID, "temperature");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[RingCloudTech] 注册智能液冷机到建造菜单失败: " + e);
+            }
+
+            try
+            {
                 // 放进基地 → 站台子类
                 // [实验性] 暂时停用研究台：ModUtil.AddBuildingToPlanScreen("Base", BiologyResearchCenterConfig.ID, "stations");
             }
@@ -312,6 +323,9 @@ namespace RingCloudTech
 
             try { UnlockSuperCapacitor(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 解锁超级电容库失败: " + e); }
+
+            try { UnlockSmartChiller(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 解锁智能液冷机失败: " + e); }
 
             // 时间之弓 / 鸿蒙之眼不再挂在原版科技上，改为自建科技节点（无源能源 / 口袋宇宙）
             try { CustomTechs.Install(); }
@@ -601,6 +615,18 @@ namespace RingCloudTech
         private static void UnlockTimeBow()
         {
             CustomTechs.Install();
+        }
+
+        /// <summary>智能液冷机挂在原版「液体温度」科技下（和原版液冷机同一格）。</summary>
+        private static void UnlockSmartChiller()
+        {
+            Tech tech = Db.Get().Techs.Get("LiquidTemperature");
+            if (tech == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 找不到 LiquidTemperature 科技");
+                return;
+            }
+            AddUnlock(tech, SmartChillerConfig.ID);
         }
 
         private static void AddUnlock(Tech tech, string id)

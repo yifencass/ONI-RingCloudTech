@@ -207,3 +207,15 @@ msgstr "口袋宇宙"
 msgctxt "STRINGS.RESEARCH.TECHS.POCKETUNIVERSE.DESC"
 msgid "Fold a universe small enough to fit inside a machine. Feeding it matter is optional; feeding it neutronium is not."
 msgstr "把一个宇宙折叠到能塞进机器里。喂它物质是可选的，喂它中子质不是。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SMARTCHILLER.NAME"
+msgid "Smart Liquid Chiller"
+msgstr "智能液冷机"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SMARTCHILLER.DESC"
+msgid "A chiller that reads a number and obeys it. Set the temperature you want coming out, and it holds your coolant there - chilling whatever arrives too warm, and waving through whatever is already cold enough."
+msgstr "一台会读数的液冷机。把想要流出的温度写给它，它就把你的冷却液稳定在那儿——进来太热的降温，本来够冷的直接放行。"
+
+msgctxt "STRINGS.BUILDINGS.PREFABS.SMARTCHILLER.EFFECT"
+msgid "Cools <b>Liquid</b> down to the <b>target temperature</b> shown on its display.\n\nConsumes <b>1800 W</b> of Power while chilling.\n\nLiquid that is already at or below the target passes through untouched, using no power.\n\nHeat removed from the liquid is dumped into the building itself."
+msgstr "把<b>液体</b>冷却到屏幕上设定的<b>目标温度</b>。\n\n冷却时消耗 <b>1800 瓦</b>电力。\n\n已经低于目标温度的液体直接通过，不降温也不耗电。\n\n从液体里抽走的热量会灌进建筑自身。"

@@ -38,6 +38,22 @@
   - 容量 800 kJ，每周期泄漏 60 J（`JOULES_LOST_PER_SECOND = 0.1`）
   - 自身发热 0.05 kW，过热温度 50 °C，熔点 800 °C
   - 建造材料 1200 kg，建造时间 60 s
+- **时间之弓（Time Bow）** —— 4×3 氦气发电机，外形参考反应炉 + 出料口，表盘指针在运行时会加速转动：
+  - 发电 800 W；每周期只烧 30 kg **氦气**（气体管道输入）
+  - 不产生热量；装饰 +45（范围 8 格）；掩埋时停止工作
+  - 额外产出：每周期 500 kg **中子质**（原版 `Unobtanium`），从机侧出料口落地；原版没有中子质的可落地物件，模组在 `GeneratedOre` 加载阶段补了一个（贴图暂借铁矿石）
+  - 建造 120 s；材料：精炼金属 400 kg + 玻璃 200 kg + 塑料 50 kg
+  - 科技：自建节点 **无源能源**（基础 70 / 高级 100 / 辐射 370 / 天文 250，前置「多路传输」）
+- **智能液冷机（Smart Chiller）** —— 4×3 液冷建筑，**可设定目标温度**：
+  - 目标温度 −100 ~ 200 °C，详情面板里有滑块 + 数字输入框（走原版「温度阈值」侧屏）
+  - 进液温度高于目标 → 一次性冷却到目标温度输出；低于等于目标 → **原样直通、不耗电**
+  - 抽走的热量灌回建筑本体（机器会发烫，和原版液冷机一致）
+  - 耗电 1800 W（只在真降温时计费）；可潜水；过热 200 °C；导热系数 8
+  - 建造 180 s；材料：精炼金属 1200 kg + 密封圈 200 kg
+  - 三层动态表现：涡轮随液流旋转、运行指针随通电顺时针转、冷却指针在降温时 ±45° 往复、屏幕读数跟随设定值实时刷新
+  - 管路：中排左进右出；底排为电源口与信号口
+  - 科技：原版「液体温度」（LiquidTemperature），与液冷机同节点
+- **自建研究节点** —— 「无源能源」（时间之弓）与「口袋宇宙」（鸿蒙之眼，基础 200 / 高级 260 / 辐射 900 / 天文 800，前置「多路传输」+「低温燃料推进」）；节点位置由代码按前置科技自动排布
 - **鸿蒙之眼（Harmony Eye）** `[ALN联动建筑第一版]` —— 9×9 巨型装置，美术与机制参考 GTNH 的同名多方块：
   - 电力：20 kW；房间类型：工业。**电力由建筑自己吃电网，不托管给 ALN 能量池**
   - **无管道 / 运输端口**：氢气与产物全部走 ALN 频道（需要安装 Applied Logistics Network）
@@ -118,6 +134,8 @@ RingCloudTech/
 ├── mod.yaml
 ├── mod_info.yaml
 ├── anim/assets/             ← 已入库，直接复制
+├── timebow_clock/           ← 时间之弓的表盘指针层
+├── smartchiller_layers/     ← 智能液冷机的涡轮 / 指针 / 字形层
 ├── codex/Plants/
 ├── elements/
 │   └── cola.yaml
@@ -161,6 +179,14 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 | `CoffeeTreePlantConfig.cs` | 咖啡树植物本体 |
 | `CoffeeBeanConfig.cs` | 咖啡豆食物定义 |
 | `SuperCapacitorConfig.cs` | 超级电容库建筑定义 |
+| `TimeBowConfig.cs` | 时间之弓建筑定义（800 W 氦气发电机） |
+| `TimeBowSolidSpawner.cs` | 时间之弓的中子质出料 |
+| `TimeBowClock.cs` | 时间之弓表盘：运行时叠加三根会转的指针 |
+| `SmartChillerConfig.cs` | 智能液冷机建筑定义 |
+| `SmartChiller.cs` | 智能液冷机冷却逻辑 + 目标温度阈值侧屏（`IThresholdSwitch`） |
+| `SmartChillerVisual.cs` | 智能液冷机图像层：涡轮 / 两根指针 / 屏幕温度文字 |
+| `CustomTechs.cs` | 自建研究节点（无源能源 / 口袋宇宙）与位置排布 |
+| `Diagnostics.cs` | 调试用诊断（研究卡片布局 dump、元素块温度检查） |
 | `HarmonyEyeConfig.cs` | 鸿蒙之眼建筑定义与两条配方 |
 | `HarmonyEyeVisual.cs` | 鸿蒙之眼的分层渲染与彩球运动 |
 | `HarmonyEyeInfo.cs` | 鸿蒙之眼的氢气储量状态条目 |
@@ -186,6 +212,8 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 anim/assets/
 ├── harmonyeye/          # 鸿蒙之眼（kanim + 分层裸贴图 *.raw）
 ├── supercapacitor/      # 超级电容库
+├── timebow/             # 时间之弓
+├── smartchiller/        # 智能液冷机
 ├── coffee_tree/         # 咖啡树植株
 ├── coffee_tree_seed/    # 咖啡树种子
 ├── coffee_bean/         # 咖啡豆
@@ -193,6 +221,11 @@ anim/assets/
 ├── seed_sweet_cane/     # 甜蔗种子
 └── sweet_cane_food/     # 甜蔗产物
 ```
+
+另外两个目录放**运行时叠加的贴图层**（不走 kanim，用 `SpriteRenderer` 直接叠在建筑上）：
+
+- `timebow_clock/`：`hand_hour.png` / `hand_minute.png` / `hand_second.png`（以枢轴为中心裁好的方块图）
+- `smartchiller_layers/`：`turbine.png` / `needle_run.png` / `needle_cool.png` / `glyphs.png`
 
 每个目录三个文件：`<名>.png`、`<名>_anim.bytes`、`<名>_build.bytes`。
 kanim 名 = 目录名 + `_kanim`。
