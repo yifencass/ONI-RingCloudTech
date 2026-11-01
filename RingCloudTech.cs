@@ -1266,7 +1266,27 @@ namespace RingCloudTech
 
         public static void Prefix(ref List<Type> types)
         {
-            if (types == null || HarmonyEyeAln.Installed)
+            if (types == null)
+            {
+                return;
+            }
+
+            // 生物学研究台：总开关关掉时同样要整座建筑消失。
+            // 只要 BiologyResearchCenterConfig 还被注册，Research.GetMissingResearchBuildingName
+            // 就会在 researchCenterPrefabs 里找到它、认为该科技「有对应研究站」，
+            // 于是给玩家挂一条常驻的「缺少研究站」提示；研究侧屏再顺着 biology 成本键去
+            // GetResearchType("biology").name，直接空引用崩溃。
+            if (!BiologyResearch.ENABLED)
+            {
+                int biologyRemoved = types.RemoveAll(t => t == typeof(BiologyResearchCenterConfig));
+                if (biologyRemoved > 0)
+                {
+                    Debug.Log("[RingCloudTech] 生物学研究已停用，已跳过生物学研究台的建筑注册（移除 " +
+                              biologyRemoved + " 个配置类型）");
+                }
+            }
+
+            if (HarmonyEyeAln.Installed)
             {
                 return;
             }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HarmonyLib;
 using Klei.AI;
 using STRINGS;
@@ -79,6 +79,19 @@ namespace RingCloudTech
                 return;
             }
 
+            // 总开关关掉时不能只是「什么都不做」——旧版本在这里还会往全局点数表和
+            // FarmingTech.costsByResearchTypeID 里写 biology，而 biology 这个研究类型
+            // 并没有注册，于是：
+            //   ① 研究侧屏 ResearchSideScreen.RefreshDisplayState 里
+            //      GetResearchType(key).name 直接空引用（选中研究台就崩）；
+            //   ② Research.CheckResearchBuildings 认为该科技缺研究站 → 弹「缺少研究站」。
+            // 所以这里要把历史残留彻底清掉。
+            if (!ENABLED)
+            {
+                Cleanup();
+                return;
+            }
+
             Research research = Research.Instance;
             if (research == null || research.researchTypes == null || research.globalPointInventory == null)
             {
@@ -108,6 +121,92 @@ namespace RingCloudTech
 
             registered = true;
             Debug.Log("[RingCloudTech] 已注册生物学研究类型");
+        }
+
+        /// <summary>已经清过场的那一个 Research 实例（换存档后 Research 会重建，必须重清一次）。</summary>
+        private static Research cleanedFor;
+
+        /// <summary>
+        /// 总开关关掉后的清场：把旧版本写进去的 biology 残留全删掉。
+        ///
+        /// 旧版 Register() 不看 ENABLED，会往 globalPointInventory 塞 biology 点数键，
+        /// 还会给 FarmingTech 挂 100 点 biology 成本；但研究类型本身从没注册过，于是
+        ///   · ResearchSideScreen.RefreshDisplayState 里 GetResearchType(key).name → 空引用崩；
+        ///   · Research.GetMissingResearchBuildingName 认为该科技缺研究站 → 常驻「缺少研究站」提示。
+        /// 这里把两处残留都清掉，再让原版重算一次通知。
+        /// </summary>
+        public static void Cleanup()
+        {
+            Research research = Research.Instance;
+            if (research == null || cleanedFor == research)
+            {
+                return;
+            }
+
+            int removedCosts = 0;
+            int removedPoints = 0;
+
+            try
+            {
+                if (research.globalPointInventory != null &&
+                    research.globalPointInventory.PointsByTypeID.Remove(TYPE_ID))
+                {
+                    removedPoints++;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 清理全局点数表失败: " + e.Message);
+            }
+
+            try
+            {
+                Database.Techs techs = Db.Get() != null ? Db.Get().Techs : null;
+                if (techs != null)
+                {
+                    foreach (Tech tech in techs.resources)
+                    {
+                        if (tech == null)
+                        {
+                            continue;
+                        }
+
+                        if (tech.costsByResearchTypeID.Remove(TYPE_ID))
+                        {
+                            removedCosts++;
+                        }
+
+                        TechInstance instance = research.Get(tech);
+                        if (instance != null && instance.progressInventory != null &&
+                            instance.progressInventory.PointsByTypeID.Remove(TYPE_ID))
+                        {
+                            removedPoints++;
+                        }
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 清理科技成本表失败: " + e.Message);
+            }
+
+            cleanedFor = research;
+            Debug.Log("[RingCloudTech] 生物学研究已停用：清理残留研究成本 " + removedCosts +
+                      " 处、点数键 " + removedPoints + " 处");
+
+            // 让原版重新算一次「缺少研究站」通知（成本已清空 → 通知应当消失）。
+            try
+            {
+                System.Reflection.MethodInfo check = AccessTools.Method(typeof(Research), "CheckResearchBuildings");
+                if (check != null)
+                {
+                    check.Invoke(research, new object[1] { null });
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 刷新研究站通知失败: " + e.Message);
+            }
         }
     }
 
@@ -281,8 +380,21 @@ namespace RingCloudTech
             Research research = Research.Instance;
             if (research != null && research.researchTypes != null)
             {
-                BiologyResearch.RegisterTypeOnly(research.researchTypes);
-                return true;
+                // 研究台的方向研究类型必须真的存在，否则原版那句
+                // researchTypes.GetResearchType(id).name 会空引用。
+                ResearchCenter center = go != null ? go.GetComponent<ResearchCenter>() : null;
+                string typeId = center != null ? center.research_point_type_id : null;
+                if (string.IsNullOrEmpty(typeId) || HasResearchTypePublic(research.researchTypes, typeId))
+                {
+                    BiologyResearch.RegisterTypeOnly(research.researchTypes);
+                    return true;
+                }
+
+                __result = new System.Collections.Generic.List<Descriptor>
+                {
+                    new Descriptor("研究台的研究类型未注册，已停用。", "研究类型缺失。", Descriptor.DescriptorType.Requirement)
+                };
+                return false;
             }
 
             try
@@ -298,6 +410,88 @@ namespace RingCloudTech
             }
 
             return false;
+        }
+
+        internal static bool HasResearchTypePublic(ResearchTypes types, string id)
+        {
+            foreach (ResearchType type in types.Types)
+            {
+                if (type != null && type.id == id)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 研究侧屏（ResearchSideScreen）崩溃的最终防线。
+    ///
+    /// 原版 RefreshDisplayState 会遍历当前研究科技的 costsByResearchTypeID，
+    /// 并对每个键调用 researchTypes.GetResearchType(key).name —— 键存在但研究类型不存在
+    /// （比如旧版本写进去的 biology，或卸载某个研究类 mod 留下的键）就是空引用。
+    /// 这里在绘制前把「查不到研究类型」的成本键剔掉，UI 自然就只画存在的那些。
+    /// </summary>
+    [HarmonyPatch(typeof(ResearchSideScreen), "RefreshDisplayState")]
+    public static class ResearchSideScreen_RefreshDisplayState_Safe
+    {
+        private static bool warned;
+
+        public static void Prefix()
+        {
+            try
+            {
+                Research research = Research.Instance;
+                if (research == null || research.researchTypes == null)
+                {
+                    return;
+                }
+
+                TechInstance active = research.GetActiveResearch();
+                Tech tech = active != null ? active.tech : null;
+                if (tech == null || tech.costsByResearchTypeID == null)
+                {
+                    return;
+                }
+
+                List<string> dangling = null;
+                foreach (string key in tech.costsByResearchTypeID.Keys)
+                {
+                    if (!ResearchCenter_GetDescriptors_Safe.HasResearchTypePublic(research.researchTypes, key))
+                    {
+                        if (dangling == null)
+                        {
+                            dangling = new List<string>();
+                        }
+
+                        dangling.Add(key);
+                    }
+                }
+
+                if (dangling == null)
+                {
+                    return;
+                }
+
+                foreach (string key in dangling)
+                {
+                    tech.costsByResearchTypeID.Remove(key);
+                }
+
+                if (!warned)
+                {
+                    warned = true;
+                    Debug.Log("[RingCloudTech] 研究侧屏：已剔除 " + dangling.Count +
+                              " 个没有对应研究类型的残留成本键（" + string.Join(", ", dangling.ToArray()) +
+                              "），避免原版绘制时空引用。");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[RingCloudTech] 研究侧屏残留成本键清理失败: " + e.Message);
+            }
         }
     }
 }
