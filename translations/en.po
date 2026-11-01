@@ -202,3 +202,10 @@ msgstr "A chiller that reads a number and obeys it. Set the temperature you want
 msgctxt "STRINGS.BUILDINGS.PREFABS.SMARTCHILLER.EFFECT"
 msgid "Cools <b>Liquid</b> down to the <b>target temperature</b> shown on its display.\n\nConsumes <b>1800 W</b> of Power while chilling.\n\nLiquid that is already at or below the target passes through untouched, using no power.\n\nHeat removed from the liquid is dumped into the building itself."
 msgstr "Cools <b>Liquid</b> down to the <b>target temperature</b> shown on its display.\n\nConsumes <b>1800 W</b> of Power while chilling.\n\nLiquid that is already at or below the target passes through untouched, using no power.\n\nHeat removed from the liquid is dumped into the building itself."
+msgctxt "STRINGS.UI.SMARTCHILLER.TITLE"
+msgid "Target Temperature"
+msgstr "Target Temperature"
+
+msgctxt "STRINGS.UI.SMARTCHILLER.TOOLTIP"
+msgid "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through."
+msgstr "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through."

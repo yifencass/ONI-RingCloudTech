@@ -1,4 +1,4 @@
-# ONI-RingCloudTech
+﻿# ONI-RingCloudTech
 
 在《缺氧》(Oxygen Not Included) 上的「环云科技」模组。
 
@@ -45,7 +45,7 @@
   - 建造 120 s；材料：精炼金属 400 kg + 玻璃 200 kg + 塑料 50 kg
   - 科技：自建节点 **无源能源**（基础 70 / 高级 100 / 辐射 370 / 天文 250，前置「多路传输」）
 - **智能液冷机（Smart Chiller）** —— 4×3 液冷建筑，**可设定目标温度**：
-  - 目标温度 −100 ~ 200 °C，详情面板里有滑块 + 数字输入框（走原版「温度阈值」侧屏）
+  - 目标温度 −100 ~ 200 °C，详情面板里有滑块 + 数字输入框（走原版单滑块侧屏，不参与阈值/信号逻辑）
   - 进液温度高于目标 → 一次性冷却到目标温度输出；低于等于目标 → **原样直通、不耗电**
   - 吞吐：内部缓冲罐 **1 吨**，进料 1000 kg/s ——「管道能跑多少就收多少」，不再卡在 10 kg/s
   - 每 tick 处理一件（一包管道液体）并推到出口，处理完立刻出料，不做批处理
@@ -216,7 +216,7 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 | `TimeBowSolidSpawner.cs` | 时间之弓的中子质出料 |
 | `TimeBowClock.cs` | 时间之弓表盘：运行时叠加三根会转的指针 |
 | `SmartChillerConfig.cs` | 智能液冷机建筑定义 |
-| `SmartChiller.cs` | 智能液冷机冷却逻辑 + 目标温度阈值侧屏（`IThresholdSwitch`） |
+| `SmartChiller.cs` | 智能液冷机冷却逻辑 + 目标温度滑块侧屏（`ISingleSliderControl`） |
 | `SmartChillerVisual.cs` | 智能液冷机图像层：涡轮 / 两根指针 / 屏幕温度文字 |
 | `CustomTechs.cs` | 自建研究节点（无源能源 / 口袋宇宙）与位置排布 |
 | `Diagnostics.cs` | 调试用诊断（研究卡片布局 dump、元素块温度检查） |

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using STRINGS;
 using TUNING;
 using UnityEngine;
@@ -172,7 +172,7 @@ namespace RingCloudTech
             // 逻辑使能口（T），无信号时按未接线处理 → 正常工作
             go.AddOrGet<LogicOperationalController>();
 
-            // 冷却逻辑 + 目标温度滑块（IThresholdSwitch）
+            // 冷却逻辑 + 目标温度滑块（ISingleSliderControl）
             go.AddOrGet<SmartChiller>();
 
             // 涡轮 / 两根指针 / 屏幕温度文本（运行时 sprite 叠加）

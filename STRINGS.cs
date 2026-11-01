@@ -157,6 +157,13 @@ namespace RingCloudTech
                 public static LocString RECIPE_DESC =
                     "Sweet Cane run through the crusher, split into its sugar and its husk.";
             }
+
+            public static class SMARTCHILLER
+            {
+                public static LocString TITLE = "Target Temperature";
+                public static LocString TOOLTIP =
+                    "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through.";
+            }
         }
 
         // ── 甜蔗（SweetCane）────────────────────────────────────────

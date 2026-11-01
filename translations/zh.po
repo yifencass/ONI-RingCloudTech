@@ -219,3 +219,10 @@ msgstr "一台会读数的液冷机。把想要流出的温度写给它，它就
 msgctxt "STRINGS.BUILDINGS.PREFABS.SMARTCHILLER.EFFECT"
 msgid "Cools <b>Liquid</b> down to the <b>target temperature</b> shown on its display.\n\nConsumes <b>1800 W</b> of Power while chilling.\n\nLiquid that is already at or below the target passes through untouched, using no power.\n\nHeat removed from the liquid is dumped into the building itself."
 msgstr "把<b>液体</b>冷却到屏幕上设定的<b>目标温度</b>。\n\n冷却时消耗 <b>1800 瓦</b>电力。\n\n已经低于目标温度的液体直接通过，不降温也不耗电。\n\n从液体里抽走的热量会灌进建筑自身。"
+msgctxt "STRINGS.UI.SMARTCHILLER.TITLE"
+msgid "Target Temperature"
+msgstr "目标温度"
+
+msgctxt "STRINGS.UI.SMARTCHILLER.TOOLTIP"
+msgid "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through."
+msgstr "把通过的液体冷却到这个温度；已经达到或低于它的液体直接排出。"

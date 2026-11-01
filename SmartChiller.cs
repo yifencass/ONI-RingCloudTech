@@ -7,8 +7,9 @@ using UnityEngine;
 namespace RingCloudTech
 {
     /// <summary>
-    /// 智能液冷机的核心逻辑：把管道里的液体冷却到「目标温度」，同时兼任温度阈值侧屏
-    /// （IThresholdSwitch → ThresholdSwitchSideScreen 会自动给建筑加一个滑块 + 数字输入框）。
+    /// 智能液冷机的核心逻辑：把管道里的液体冷却到「目标温度」，同时兼任目标温度侧屏
+    /// （ISingleSliderControl → SingleSliderSideScreen 只给一个滑块 + 数字输入框，
+    ///   不继承温度传感器那套「检测环境温度 / 输出信号」的阈值语义）。
     ///
     /// 与原本版 AirConditioner 的区别：原版是固定 ΔT（-14 K），这里是「冷却到指定温度」——
     ///   进液温度 &gt; 目标温度 → 冷却到目标温度再输出（消耗电力）；
@@ -19,7 +20,7 @@ namespace RingCloudTech
     /// 冷却带走的热量全部灌进建筑自身的结构温度（和原版液冷机一致，不会凭空消失），
     /// 所以机器会越来越热，需要玩家自己给机器降温。
     /// </summary>
-    public class SmartChiller : KMonoBehaviour, ISaveLoadable, ISim200ms, IThresholdSwitch
+    public class SmartChiller : KMonoBehaviour, ISaveLoadable, ISim200ms, ISingleSliderControl
     {
         // ───── 目标温度范围 ─────
         /// <summary>默认目标温度 20 °C。</summary>
@@ -37,27 +38,9 @@ namespace RingCloudTech
         /// <summary>温差小于这个值就认为「已经够冷了」，避免浮点抖动导致反复进出冷却状态。</summary>
         private const float TEMPERATURE_EPSILON = 0.01f;
 
-        /// <summary>
-        /// 滑块分段：必须从 0 起连续递增（NonLinearSlider.GetPercentageFromValue 的约定），
-        /// 第一段终点即 RangeMin（这一段是夹紧死区，只给 2% 宽度）。
-        /// 中段给 273–303 K 最多的精度，那是日常「给液体降温」最常用的区间。
-        /// </summary>
-        private static readonly NonLinearSlider.Range[] TEMPERATURE_RANGES =
-        {
-            new NonLinearSlider.Range(2f, RANGE_MIN),     // 0 ~ 173.15 K（死区）
-            new NonLinearSlider.Range(33f, 273.15f),      // 173.15 ~ 273.15 K（深冷）
-            new NonLinearSlider.Range(35f, 303.15f),      // 273.15 ~ 303.15 K（常用区间）
-            new NonLinearSlider.Range(20f, 373.15f),      // 303.15 ~ 373.15 K
-            new NonLinearSlider.Range(10f, RANGE_MAX),    // 373.15 ~ 473.15 K
-        };
-
         /// <summary>目标温度（Kelvin）。侧屏滑块与数字框都写这个字段。</summary>
         [Serialize]
         private float targetTemperature = DEFAULT_TARGET_TEMPERATURE;
-
-        /// <summary>侧屏上的「高于/低于」开关；本机恒定向下冷却，这里只做记忆不影响逻辑。</summary>
-        [Serialize]
-        private bool activateAboveThreshold = true;
 
         private KSelectable selectable;
         private Storage storage;
@@ -71,7 +54,6 @@ namespace RingCloudTech
 
         private bool cooling;
         private bool hasFlow;
-        private float lastInputTemperature = DEFAULT_TARGET_TEMPERATURE;
 
         // ───── 供 SmartChillerVisual 读取的状态 ─────
 
@@ -80,9 +62,6 @@ namespace RingCloudTech
 
         /// <summary>本 tick 是否有液体通过（含直通不冷却）。</summary>
         public bool HasLiquidFlow => hasFlow;
-
-        /// <summary>最近一次进液温度（Kelvin）。</summary>
-        public float LastInputTemperature => lastInputTemperature;
 
         /// <summary>当前目标温度（Kelvin）。</summary>
         public float TargetTemperature => targetTemperature;
@@ -205,7 +184,6 @@ namespace RingCloudTech
                 }
 
                 float inputTemperature = pe.Temperature;
-                lastInputTemperature = inputTemperature;
 
                 bool needsCooling = inputTemperature > targetTemperature + TEMPERATURE_EPSILON;
                 float outputTemperature = needsCooling
@@ -278,66 +256,49 @@ namespace RingCloudTech
             operational.SetActive(didCool);
         }
 
-        // ───── IThresholdSwitch：目标温度滑块 ─────
+        // ───── ISingleSliderControl：目标温度滑块 ─────
+        // 只要一个「设定温度」的滑块 + 数字框，所以不实现 IThresholdSwitch：
+        // 那套是给温度传感器用的（检测环境温度、高于/低于判定、对外输出信号），本机都不需要。
 
-        public float Threshold
+        private const string SLIDER_TITLE_KEY = "STRINGS.UI.SMARTCHILLER.TITLE";
+        private const string SLIDER_TOOLTIP_KEY = "STRINGS.UI.SMARTCHILLER.TOOLTIP";
+
+        public string SliderTitleKey => SLIDER_TITLE_KEY;
+
+        public string SliderUnits
         {
-            get => targetTemperature;
-            set => targetTemperature = Mathf.Clamp(value, RANGE_MIN, RANGE_MAX);
-        }
-
-        public bool ActivateAboveThreshold
-        {
-            get => activateAboveThreshold;
-            set => activateAboveThreshold = value;
-        }
-
-        /// <summary>侧屏「当前值」显示进液温度；没有液体时退回目标温度。</summary>
-        public float CurrentValue => lastInputTemperature;
-
-        public float RangeMin => RANGE_MIN;
-        public float RangeMax => RANGE_MAX;
-
-        public LocString Title => UI.UISIDESCREENS.TEMPERATURESWITCHSIDESCREEN.TITLE;
-
-        public LocString ThresholdValueName => UI.UISIDESCREENS.THRESHOLD_SWITCH_SIDESCREEN.TEMPERATURE;
-
-        public string AboveToolTip => UI.UISIDESCREENS.THRESHOLD_SWITCH_SIDESCREEN.TEMPERATURE_TOOLTIP_ABOVE;
-
-        public string BelowToolTip => UI.UISIDESCREENS.THRESHOLD_SWITCH_SIDESCREEN.TEMPERATURE_TOOLTIP_BELOW;
-
-        public ThresholdScreenLayoutType LayoutType => ThresholdScreenLayoutType.SliderBar;
-
-        public int IncrementScale => 1;
-
-        public NonLinearSlider.Range[] GetRanges => TEMPERATURE_RANGES;
-
-        public float GetRangeMinInputField() => GameUtil.GetConvertedTemperature(RangeMin);
-
-        public float GetRangeMaxInputField() => GameUtil.GetConvertedTemperature(RangeMax);
-
-        public LocString ThresholdValueUnits()
-        {
-            switch (GameUtil.temperatureUnit)
+            get
             {
-                case GameUtil.TemperatureUnit.Fahrenheit:
-                    return UI.UNITSUFFIXES.TEMPERATURE.FAHRENHEIT;
-                case GameUtil.TemperatureUnit.Kelvin:
-                    return UI.UNITSUFFIXES.TEMPERATURE.KELVIN;
-                default:
-                    return UI.UNITSUFFIXES.TEMPERATURE.CELSIUS;
+                switch (GameUtil.temperatureUnit)
+                {
+                    case GameUtil.TemperatureUnit.Fahrenheit:
+                        return UI.UNITSUFFIXES.TEMPERATURE.FAHRENHEIT;
+                    case GameUtil.TemperatureUnit.Kelvin:
+                        return UI.UNITSUFFIXES.TEMPERATURE.KELVIN;
+                    default:
+                        return UI.UNITSUFFIXES.TEMPERATURE.CELSIUS;
+                }
             }
         }
 
-        public string Format(float value, bool units)
+        /// <summary>数字框保留 1 位小数（0.1 K 精度）。</summary>
+        public int SliderDecimalPlaces(int index) => 1;
+
+        public float GetSliderMin(int index) => GameUtil.GetConvertedTemperature(RANGE_MIN);
+
+        public float GetSliderMax(int index) => GameUtil.GetConvertedTemperature(RANGE_MAX);
+
+        public float GetSliderValue(int index) => GameUtil.GetConvertedTemperature(targetTemperature);
+
+        /// <summary>滑块/数字框改动时回写目标温度；输入是显示单位（°C/°F/K）。</summary>
+        public void SetSliderValue(float value, int index)
         {
-            return GameUtil.GetFormattedTemperature(
-                value, GameUtil.TimeSlice.None, GameUtil.TemperatureInterpretation.Absolute,
-                units, false);
+            targetTemperature = Mathf.Clamp(
+                GameUtil.GetTemperatureConvertedToKelvin(value), RANGE_MIN, RANGE_MAX);
         }
 
-        public float ProcessedSliderValue(float input) => Mathf.Round(input * 10f) / 10f;
+        public string GetSliderTooltipKey(int index) => SLIDER_TOOLTIP_KEY;
 
-        public float ProcessedInputValue(float input) => GameUtil.GetTemperatureConvertedToKelvin(input);
+        public string GetSliderTooltip(int index) => STRINGS.UI.SMARTCHILLER.TOOLTIP;
     }
 }
