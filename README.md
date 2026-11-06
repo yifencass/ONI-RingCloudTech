@@ -271,31 +271,6 @@ kanim 名 = 目录名 + `_kanim`。
 > 否则内部自引用会和目录名不一致。注意内部名**不一定等于**文件名
 > （原版就存在 `batteryMed` 对 `batterymed` 这种驼峰差异）。
 
-#### 咖啡树贴图更新（2026-11-06）
-
-`anim/assets/coffee_tree/` 的植株图集已从原版虫果芽 `wormwood_kanim` 换成
-史前 DLC 花园植物（`GardenFoodPlant`）的 `spike_fruit_kanim`：用换色工坊的
-「翠金」预设（tint `255,195,45` + 护色 `137°±79°`）上色，再把 kanim 内部名
-从 `spike_fruit` 改成 `coffee_tree`；三件套仍是
-`coffee_tree_0.png` / `coffee_tree_anim.bytes` / `coffee_tree_build.bytes`。
-
-两套资产的剪辑命名完全不同，`CoffeeTreePlantConfig.ANIMS` 必须同步：
-
-| AnimSet 字段 | 旧（虫果芽） | 现（史前花园植物） |
-|---|---|---|
-| `grow` | `super_grow` | `grow` |
-| `grow_pst` | `super_grow_pst` | `grow_pst` |
-| `idle_full` | `super_idle_full` | `idle_full` |
-| `wilt_base` | `super_wilt` | `wilt`（自动拼 `1/2/3`） |
-| `harvest` | `super_harvest` | `harvest` |
-
-植株初始动画仍是 `idle_empty`，放置预览复用本体 kanim 的 `place` 白描，
-这两个剪辑在新图集中都存在。种子与咖啡豆的 kanim 独立，未随之改动。
-
-> 贴图换色与 kanim 重建由本地工具 `tools/replace_coffee_tree_art.py` 完成
-> （依赖工作区里的 ModForge 换色工坊，含机器相关路径，未入库）；
-> 资产与 `ANIMS` 的实际改动见提交 `a396b6c`。
-
 #### 鸿蒙之眼的分层贴图
 
 鸿蒙之眼的环体用 kanim 加载，其余六层（空间扭曲 / 黑球 / 彩球 / 十字 / 矩阵）
