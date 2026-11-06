@@ -207,6 +207,17 @@ namespace RingCloudTech
                     public static LocString DOMESTICATEDDESC =
                         "This plant has been domesticated. It does not need fertiliser, but demands strong light to grow.";
                 }
+
+                // ── 液氦泉（间歇泉）────────────────────────────
+                public static class GEYSER
+                {
+                    public static class LIQUID_HELIUM
+                    {
+                        public static LocString NAME = "Liquid Helium Geyser";
+                        public static LocString DESC =
+                            "A fissure weeping liquid helium a few degrees above absolute zero. It flashes to gas the moment it touches anything warmer, devouring heat along the way - and feeding machines with a taste for helium.";
+                    }
+                }
             }
         }
 

@@ -226,3 +226,11 @@ msgstr "目标温度"
 msgctxt "STRINGS.UI.SMARTCHILLER.TOOLTIP"
 msgid "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through."
 msgstr "把通过的液体冷却到这个温度；已经达到或低于它的液体直接排出。"
+
+msgctxt "STRINGS.CREATURES.SPECIES.GEYSER.LIQUID_HELIUM.NAME"
+msgid "Liquid Helium Geyser"
+msgstr "液氦泉"
+
+msgctxt "STRINGS.CREATURES.SPECIES.GEYSER.LIQUID_HELIUM.DESC"
+msgid "A fissure weeping liquid helium a few degrees above absolute zero. It flashes to gas the moment it touches anything warmer, devouring heat along the way - and feeding machines with a taste for helium."
+msgstr "一道渗出液氦的裂隙，温度只比绝对零度高几度。液氦一碰到稍暖的东西就立刻汽化，途中吞掉大量热量——顺带喂饱那些爱吃氦气的机器。"
