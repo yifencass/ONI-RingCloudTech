@@ -9,14 +9,11 @@ namespace RingCloudTech
     /// <summary>
     /// 咖啡树 —— 火椒树的近亲，1×2 直立作物。
     ///
-    /// 美术：用原版虫果芽 `wormwood_kanim` 的 **super_*（正常版/不贫瘠）** 动画组。
-    ///   原版 WormPlant（贫瘠）用 basic_*，SuperWormPlant（正常）用 super_*，
-    ///   两者共用同一张图集。这里走 super_*。
+    /// 美术：史前 DLC 的 GardenFoodPlant 植株（`spike_fruit_kanim`）图集，
+    ///   用换色工坊的「翠金」预设上色后改名成 `coffee_tree_kanim` 自带一份，
+    ///   不依赖原版/DLC 资产是否加载。剪辑名见下方 ANIMS。
     ///
-    /// 预览：`coffee_tree_preview_kanim` —— 把同一图集整体转成白色线稿的副本，
-    ///   配合 super_idle_full 得到「正常版植株的白描」。
-    ///   原版只有 WormPlant 注册了预览且用的是 basic 造型的 place 剪辑，
-    ///   正常版没有白描素材，所以必须自绘。
+    /// 预览：不另建 kanim，直接复用本体 kanim 自带的 "place" 白描剪辑。
     ///
     /// 光照：900 勒克斯。实现方式是给 MinLightLux 属性挂 AttributeModifier，
     ///   再挂 IlluminationVulnerable（注意 SetPrefersDarkness() 无参 = false = 需要光照）。
@@ -28,16 +25,27 @@ namespace RingCloudTech
     public class CoffeeTreePlantConfig : IEntityConfig
     {
         /// <summary>
-        /// 正常版动画组。对应原版 SuperWormPlantConfig 里的 animSet。
-        /// wilt_base 会被 StandardCropPlant 自动拼上 1/2/3。
+        /// 生长动画组。
+        ///
+        /// 咖啡树的美术现在换成史前 DLC 的 GardenFoodPlant（植株 spike_fruit_kanim），
+        /// 所以剪辑名和之前用虫果芽（super_*）时完全不同：
+        ///
+        ///     虫果芽（旧）         史前花园植物（现）
+        ///     super_grow           grow
+        ///     super_grow_pst       grow_pst
+        ///     super_idle_full      idle_full
+        ///     super_wilt (+1/2/3)  wilt (+1/2/3)
+        ///     super_harvest        harvest
+        ///
+        /// wilt_base 会被 StandardCropPlant 自动拼上 1/2/3，所以写 "wilt" 即可。
         /// </summary>
         private static readonly StandardCropPlant.AnimSet ANIMS = new StandardCropPlant.AnimSet
         {
-            grow = "super_grow",
-            grow_pst = "super_grow_pst",
-            idle_full = "super_idle_full",
-            wilt_base = "super_wilt",
-            harvest = "super_harvest",
+            grow = "grow",
+            grow_pst = "grow_pst",
+            idle_full = "idle_full",
+            wilt_base = "wilt",
+            harvest = "harvest",
         };
 
         public GameObject CreatePrefab()
@@ -137,16 +145,12 @@ namespace RingCloudTech
                 0.3f,
                 0.3f);
 
-            // 预览：直接复用本体 kanim 里的 "place" 白描剪辑。
+            // 预览：直接复用本体 kanim（史前花园植物 spike_fruit 图集）里的
+            // "place" 白描剪辑，不再另建预览专用 kanim。
             //
-            // 和我们自己的生长动画一样，都来自 coffee_tree_kanim（原版虫果芽
-            // 图集的完整拷贝），所以不需要额外的预览专用 kanim。
-            //
-            // 注意 "place" 画的是原版【贫瘠版】虫果芽的造型，而不是我们生长时
-            // 用的 super_*（正常版）。这一点是刻意接受的：原版只为 WormPlant
-            // 注册了预览、也只画了一套白描，正常版根本没有对应素材。
-            // 与其自绘一张，不如直接复用它 —— 预览只是放置时的轮廓提示，
-            // 和实际长出来的植株形态不一致是可以接受的。
+            // 早期版本曾把整张图集转成白色线稿做成 coffee_tree_preview_kanim，
+            // 但游戏里显示不出来；改用资产自带的 place 后预览稳定可见。
+            // 预览只是放置时的轮廓提示，与长成后的翠金配色植株不必一致。
             EntityTemplates.CreateAndRegisterPreviewForPlant(
                 seed,
                 CoffeeTreeRegistrar.PREVIEW_ID,

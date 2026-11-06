@@ -15,7 +15,7 @@ namespace RingCloudTech
     ///
     /// 数值设计（玩家指定）：
     ///   定位       火椒树的近亲，产物失去辛辣口感，咖啡因浓度远高于火椒粒
-    ///   形态       1×2 直立，用虫果芽「正常版（super_*）」美术
+    ///   形态       1×2 直立，史前花园植物 spike_fruit 图集（翠金配色）
     ///   培育生长   18 周期（木质茎，生长期漫长）
     ///   光照需求   900 勒克斯（毛刺花是 200）
     ///   温度       -10℃ ~ 70℃
@@ -31,24 +31,24 @@ namespace RingCloudTech
 
         // ── 动画 ──────────────────────────────────────────────
         /// <summary>
-        /// 植株本体：自建的彩色 kanim 副本。
+        /// 植株本体：自带的彩色 kanim 副本。
         ///
-        /// 内容是原版虫果芽 wormwood 图集的完整拷贝，只把内部名改成 coffee_tree。
-        /// 为什么不直接引用原版 `wormwood_kanim`：
-        ///   1) 它属于太空 DLC 资产，DLC 未激活或资产未加载时 Assets.GetAnim 会返回
-        ///      null，植株就没贴图，只剩预览白描（正是之前的症状）
+        /// 内容来自史前 DLC 的 GardenFoodPlant 植株（`spike_fruit_kanim`）：
+        ///   图集用换色工坊的「翠金」预设上色，内部名从 spike_fruit 改成 coffee_tree。
+        /// 为什么不直接引用原版 `spike_fruit_kanim`：
+        ///   1) 它属于 DLC 资产，DLC 未激活或资产未加载时 Assets.GetAnim 可能返回
+        ///      null，植株就没贴图，只剩预览白描（之前用虫果芽时踩过这个坑）
         ///   2) 自带一份可以让本 mod 的植株/预览完全自洽，不受原版资源变动影响
         ///
-        /// 动画剪辑里同时含 basic_*（贫瘠）与 super_*（正常），
-        /// 我们在 CoffeeTreePlantConfig.ANIMS 里取 super_*。
+        /// 剪辑名沿用 spike_fruit 原生命名（grow / grow_pst / idle_full /
+        /// wilt1-3 / harvest / idle_empty / place），见 CoffeeTreePlantConfig.ANIMS。
         /// </summary>
         public const string PLANT_ANIM = "coffee_tree_kanim";
 
         // 预览不再单独做 kanim：直接复用 PLANT_ANIM 里的 "place" 白描剪辑。
         // 早期版本曾把整张图集转成白色线稿做成 coffee_tree_preview_kanim，
         // 但那样得到的白描在游戏里显示不出来，排查成本太高。
-        // 用户拍板：直接用原版那套 place 白描即可（画的是贫瘠版造型），
-        // 实际生长仍然是 super_*（正常版），两者不一致可以接受。
+        // 现在直接复用史前花园植物资产自带的 place 白描，预览稳定可见。
 
         public const string SEED_ANIM = "coffee_tree_seed_kanim";
         public const string BEAN_ANIM = "coffee_bean_kanim";
