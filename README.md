@@ -19,6 +19,15 @@
   - 输入：水 80 kg（液体管道）+ 火椒粒 0.91 kg（搬运）+ 蔗糖 14.54 kg（搬运），合计正好 100 kg
   - 输出：可乐 100 kg（液体管道）
   - 未排产时自动暂停材料搬运
+  - 其它配方：咖啡可乐（水 161 + 咖啡豆 1 + 二氧化碳 5 + 蔗糖 33 → 可乐 200）、黑咖啡、茶
+- **黑咖啡（Black Coffee）** —— 水 98 kg + 咖啡豆 2 kg → 黑咖啡 100 kg；饮用效果：
+  - 体力 +100 / 周期
+  - 压力 +15 / 周期
+  - 运动 +4
+- **茶（Tea）** —— 棕色液体，与水一样凝结成冰、蒸发成蒸汽：
+  - 配方：芳香百合花 8 kg + 水 78 kg + 咸乳 12 kg + 咖啡豆 2 kg → 茶 100 kg（合计正好 100 kg）
+  - 可加入饮水机饮用，「喝了茶」效果：建筑 +7、挖掘 +7、运动 +5、士气 +9、压力 -20% / 周期、体力 +20% / 周期
+  - 描述：一杯茶带来的盛情款待可以激起复制人的热情！
 - **甜蔗（Sweet Cane）** —— 自定义作物，外形与手感对照原版「咸蔗」编写：
   - 生长：6 周期（养殖）/ 12 周期（野生），1 格宽 2 格高
   - 灌溉：净水 10 kg/周期
@@ -34,6 +43,7 @@
   - 收获：每次 4 份咖啡豆，并额外掉落 50 kg 木材
   - 支持农场站微肥照料（加速生长）
   - 咖啡豆可作食物原料，有专属种子、数据库条目与打印舱补给包条目
+  - 植株贴图改用史前 DLC 花园植物（`spike_fruit_kanim`）的翠金换色版，自带一份，不依赖 DLC 资产是否加载
 - **超级电容库（Super Capacitor）** —— 4×3 储能建筑：
   - 容量 800 kJ，每周期泄漏 60 J（`JOULES_LOST_PER_SECOND = 0.1`）
   - 自身发热 0.05 kW，过热温度 50 °C，熔点 800 °C
@@ -56,6 +66,15 @@
   - 管路：中排左进右出；底排为电源口与信号口
   - 科技：原版「液体温度」（LiquidTemperature），与液冷机同节点
 - **自建研究节点** —— 「无源能源」（时间之弓）与「口袋宇宙」（鸿蒙之眼，基础 200 / 高级 260 / 辐射 900 / 天文 800，前置「多路传输」+「低温燃料推进」）；节点位置由代码按前置科技自动排布
+- **液氦泉（Liquid Helium Geyser）** —— 往原版间歇泉表注册的新类型，已加入世界生成的随机池：
+  - 喷出 4.15 K 的**液氦**（原版 `LiquidHelium`，沸点 4.22 K），接触常温环境立即汽化成 **氦气**
+  - 既是极强冷源，也是稳定的氦气来源（正好供时间之弓使用）
+  - 速率 300 ~ 600 kg/周期，超压 50 kg；复用原版液态 CO2 泉的 4×2 外观
+  - 同时放开原版 `Helium` / `LiquidHelium` 的 `disabled` 标记，让它们能出现在元素过滤器与数据库中
+- **高级研究台液体输入口** —— 给原版 3×3 `AdvancedResearchCenter` 打的补丁：
+  - 底排中间 `(0, 0)` 增加一个液体管道输入口，接上水管即可自动供水，免去小人搬水
+  - 与电力输入口同格（分属不同 `Grid.Objects` 层），刻意不挪电力口以免老存档断线
+  - 保留原版 `ManualDeliveryKG` 作为未接管道时的后备
 - **鸿蒙之眼（Harmony Eye）** `[ALN联动建筑第一版]` —— 9×9 巨型装置，美术与机制参考 GTNH 的同名多方块：
   - 电力：20 kW；房间类型：工业。**电力由建筑自己吃电网，不托管给 ALN 能量池**
   - **无管道 / 运输端口**：氢气与产物全部走 ALN 频道（需要安装 Applied Logistics Network；未安装时整座建筑不注册，见「联动与前置依赖」）
@@ -206,7 +225,7 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 
 | 文件 | 说明 |
 |---|---|
-| `RingCloudTech.cs` | 入口 + 全部 Harmony 补丁 |
+| `RingCloudTech.cs` | 入口 + 自定义液体 / 效果 / 饮水机相关 Harmony 补丁 |
 | `BeverageMixerConfig.cs` | 饮料调配机建筑定义与配方 |
 | `CoffeeTreeRegistrar.cs` | 咖啡树的物品 / 食物 / 作物定义与注册 |
 | `CoffeeTreePlantConfig.cs` | 咖啡树植物本体 |
@@ -220,6 +239,8 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 | `SmartChillerVisual.cs` | 智能液冷机图像层：涡轮 / 两根指针 / 屏幕温度文字 |
 | `CustomTechs.cs` | 自建研究节点（无源能源 / 口袋宇宙）与位置排布 |
 | `Diagnostics.cs` | 调试用诊断（研究卡片布局 dump、元素块温度检查） |
+| `LiquidHeliumGeyser.cs` | 液氦泉注册与氦元素启用 |
+| `AdvancedResearchCenterPatch.cs` | 原版高级研究台的液体管道输入口补丁 |
 | `HarmonyEyeConfig.cs` | 鸿蒙之眼建筑定义与两条配方 |
 | `HarmonyEyeVisual.cs` | 鸿蒙之眼的分层渲染与彩球运动 |
 | `HarmonyEyeInfo.cs` | 鸿蒙之眼的氢气储量状态条目 |
@@ -232,6 +253,8 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 | `STRINGS.cs` | 全部可翻译文本（默认英文） |
 | `LocalizationPatch.cs` | 注册 STRINGS 树并加载 `translations/*.po` |
 | `elements/cola.yaml` | 可乐元素定义 |
+| `elements/blackcoffee.yaml` | 黑咖啡元素定义 |
+| `elements/tea.yaml` | 茶元素定义 |
 | `codex/Plants/` | 甜蔗的数据库条目 |
 | `translations/` | 语言文件，新增语言只需添加 `<code>.po` |
 | `anim/` | 动画资源，已入库，克隆即可用 |
