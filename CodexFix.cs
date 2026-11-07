@@ -34,6 +34,7 @@ namespace RingCloudTech
             SweetCaneRegistrar.SEED_ID,    // SweetCaneSeed
             SweetCaneRegistrar.FRUIT_ID,   // SweetCane
             RingCloudTechMod.COLA_TAG,     // Cola
+            RingCloudTechMod.TEA_TAG,      // Tea
         };
 
         /// <summary>名字（FormatLinkID 之后）→ 真实条目 ID。</summary>

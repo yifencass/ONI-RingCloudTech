@@ -16,6 +16,8 @@ namespace RingCloudTech
         public const string COLA_TAG = "Cola";
         public const string BLACKCOFFEE_TAG = "BlackCoffee";
         public const string BLACKCOFFEE_EFFECT_ID = "DuplicantDrankBlackCoffee";
+        public const string TEA_TAG = "Tea";
+        public const string TEA_EFFECT_ID = "DuplicantDrankTea";
 
         public override void OnLoad(Harmony harmony)
         {
@@ -316,6 +318,12 @@ namespace RingCloudTech
             try { CustomizeBlackCoffeeElement(); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 修正黑咖啡元素失败: " + e); }
 
+            try { RegisterTeaEffect(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 注册茶效果失败: " + e); }
+
+            try { CustomizeTeaElement(); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 修正茶元素失败: " + e); }
+
 
 
             try { UnlockBeverageMixer(); }
@@ -458,6 +466,28 @@ namespace RingCloudTech
             }
         }
 
+        /// <summary>茶元素的显示名、描述与颜色（棕色）。</summary>
+        private static void CustomizeTeaElement()
+        {
+            Element tea = ElementLoader.FindElementByName(RingCloudTechMod.TEA_TAG);
+            if (tea == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 未找到 Tea 元素");
+                return;
+            }
+
+            tea.name = STRINGS.ELEMENTS.TEA.NAME;
+            tea.description = STRINGS.ELEMENTS.TEA.DESC;
+
+            if (tea.substance != null)
+            {
+                Color32 brown = new Color32(122, 68, 30, 255);
+                tea.substance.colour = brown;
+                tea.substance.uiColour = brown;
+                tea.substance.conduitColour = new Color32(158, 96, 46, 255);
+            }
+        }
+
         /// <summary>
         /// 给自定义液体元素补一个「液滴 prefab」。
         ///
@@ -584,6 +614,43 @@ namespace RingCloudTech
             Debug.Log("[RingCloudTech] 已注册效果 " + RingCloudTechMod.EFFECT_ID);
         }
 
+        /// <summary>
+        /// 茶的饮用效果：+7 建筑 / +7 挖掘 / +5 运动 / +9 士气，
+        /// 每周期 -20% 压力、+20% 体力。deltaAttribute 单位是每秒，1 周期 = 600 秒。
+        /// </summary>
+        private static void RegisterTeaEffect()
+        {
+            if (Db.Get().effects.Exists(RingCloudTechMod.TEA_EFFECT_ID))
+            {
+                return;
+            }
+
+            Effect effect = new Effect(
+                id: RingCloudTechMod.TEA_EFFECT_ID,
+                name: STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKTEA.NAME,
+                description: STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKTEA.TOOLTIP,
+                duration: 600f,
+                show_in_ui: true,
+                trigger_floating_text: true,
+                is_bad: false);
+
+            effect.Add(new AttributeModifier(
+                Db.Get().Attributes.Construction.Id, 7f, "茶：建筑"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Attributes.Digging.Id, 7f, "茶：挖掘"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Attributes.Athletics.Id, 5f, "茶：运动"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Attributes.QualityOfLife.Id, 9f, "茶：士气"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Amounts.Stress.deltaAttribute.Id, -20f / 600f, "茶：压力"));
+            effect.Add(new AttributeModifier(
+                Db.Get().Amounts.Stamina.deltaAttribute.Id, 20f / 600f, "茶：体力"));
+
+            Db.Get().effects.Add(effect);
+            Debug.Log("[RingCloudTech] 已注册效果 " + RingCloudTechMod.TEA_EFFECT_ID);
+        }
+
         private static void UnlockBeverageMixer()
         {
             Tech tech = Db.Get().Techs.Get("FoodRepurposing");
@@ -677,6 +744,9 @@ namespace RingCloudTech
 
             try { Db_Initialize_Patch.EnsureLiquidElementPrefab(RingCloudTechMod.BLACKCOFFEE_TAG); }
             catch (Exception e) { Debug.LogError("[RingCloudTech] 注册黑咖啡 prefab 失败: " + e); }
+
+            try { Db_Initialize_Patch.EnsureLiquidElementPrefab(RingCloudTechMod.TEA_TAG); }
+            catch (Exception e) { Debug.LogError("[RingCloudTech] 注册茶 prefab 失败: " + e); }
         }
     }
 
@@ -694,6 +764,11 @@ namespace RingCloudTech
             if (tag.Name == RingCloudTechMod.COLA_TAG)
             {
                 __result = STRINGS.ELEMENTS.COLA.NAME;
+                return false;
+            }
+            if (tag.Name == RingCloudTechMod.TEA_TAG)
+            {
+                __result = STRINGS.ELEMENTS.TEA.NAME;
                 return false;
             }
             return true;
@@ -898,6 +973,8 @@ namespace RingCloudTech
                           RingCloudTechMod.EFFECT_ID);
                 AddOption(options, ElementLoader.FindElementByName(RingCloudTechMod.BLACKCOFFEE_TAG),
                           RingCloudTechMod.BLACKCOFFEE_EFFECT_ID);
+                AddOption(options, ElementLoader.FindElementByName(RingCloudTechMod.TEA_TAG),
+                          RingCloudTechMod.TEA_EFFECT_ID);
 
                 WaterCoolerConfig.BEVERAGE_CHOICE_OPTIONS = options.ToArray();
             }
@@ -951,6 +1028,9 @@ namespace RingCloudTech
                 FixOption(__result, RingCloudTechMod.BLACKCOFFEE_TAG, STRINGS.ELEMENTS.BLACKCOFFEE.NAME,
                           STRINGS.ELEMENTS.BLACKCOFFEE.DESC, RingCloudTechMod.BLACKCOFFEE_EFFECT_ID,
                           "BLACKCOFFEE");
+
+                FixOption(__result, RingCloudTechMod.TEA_TAG, STRINGS.ELEMENTS.TEA.NAME,
+                          STRINGS.ELEMENTS.TEA.DESC, RingCloudTechMod.TEA_EFFECT_ID, "TEA");
             }
             catch (Exception e)
             {

@@ -112,6 +112,14 @@ namespace RingCloudTech
         /// <summary>黑咖啡元素 id（对应 elements/blackcoffee.yaml）。</summary>
         public const string BLACKCOFFEE_TAG = "BlackCoffee";
 
+        // ───── 茶配方 ─────
+        // 芳香百合花 8 + 水 78 + 咸乳 12 + 咖啡豆 2 = 100
+        public const float TEA_LILY = 8f;
+        public const float TEA_WATER = 78f;
+        public const float TEA_MILK = 12f;
+        public const float TEA_BEAN = 2f;
+        public const float TEA_MASS = 100f;
+
         // ───── 配方时间 ─────
         // 本体复用 sodamaker_kanim，ComplexFabricator 的动画时序是：
         //   working_pre(播一次) → working_loop(循环) → 工作结束切 working_pst
@@ -238,8 +246,27 @@ namespace RingCloudTech
             bean.RequestedItemTag = new Tag(CoffeeTreeRegistrar.BEAN_ID);
             bean.capacity = 40f;
             bean.refillMass = 10f;
-            bean.MinimumMass = COFFEECOLA_BEAN;
+            // 取三条配方里最大的单次需求，避免只补到 1 kg 而卡住茶/黑咖啡配方
+            bean.MinimumMass = TEA_BEAN;
             bean.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
+
+            // 芳香百合花搬运（游戏内 Tag 是 SwampLilyFlower）
+            ManualDeliveryKG lily = go.AddComponent<ManualDeliveryKG>();
+            lily.SetStorage(fabricator.inStorage);
+            lily.RequestedItemTag = new Tag("SwampLilyFlower");
+            lily.capacity = 30f;
+            lily.refillMass = 10f;
+            lily.MinimumMass = TEA_LILY;
+            lily.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
+
+            // 咸乳搬运（原版液体 Brackene / SimHashes.Milk，走瓶装液体）
+            ManualDeliveryKG milk = go.AddComponent<ManualDeliveryKG>();
+            milk.SetStorage(fabricator.inStorage);
+            milk.RequestedItemTag = SimHashes.Milk.CreateTag();
+            milk.capacity = 40f;
+            milk.refillMass = 15f;
+            milk.MinimumMass = TEA_MILK;
+            milk.choreTypeIDHash = Db.Get().ChoreTypes.MachineFetch.IdHash;
 
             ConfigureRecipes();
             Prioritizable.AddRef(go);
@@ -326,6 +353,29 @@ namespace RingCloudTech
                     blackCoffee.tag, BLACKCOFFEE_MASS, BLACKCOFFEE_TAG,
                     "黑咖啡",
                     "98 kg 水加 2 kg 咖啡豆冲泡而成，苦味浓烈，但足够撑起一个通宵。");
+            }
+
+            // ───── 茶：芳香百合花 8 + 水 78 + 咸乳 12 + 咖啡豆 2 → 茶 100 ─────
+            Element tea = ElementLoader.FindElementByName(RingCloudTechMod.TEA_TAG);
+            if (tea == null)
+            {
+                Debug.LogWarning("[RingCloudTech] 未找到 Tea 元素，跳过茶配方");
+            }
+            else
+            {
+                Tag lilyTag = new Tag("SwampLilyFlower");
+                Tag milkTag = SimHashes.Milk.CreateTag();
+                RegisterMeltedRecipe(
+                    new ComplexRecipe.RecipeElement[]
+                    {
+                        new ComplexRecipe.RecipeElement(lilyTag, TEA_LILY),
+                        new ComplexRecipe.RecipeElement(waterTag, TEA_WATER),
+                        new ComplexRecipe.RecipeElement(milkTag, TEA_MILK),
+                        new ComplexRecipe.RecipeElement(beanTag, TEA_BEAN),
+                    },
+                    tea.tag, TEA_MASS, RingCloudTechMod.TEA_TAG,
+                    "茶",
+                    "芳香百合花、水、咸乳与咖啡豆调成的一杯热茶，能激起复制人的热情。");
             }
         }
 

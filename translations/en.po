@@ -209,3 +209,19 @@ msgstr "Target Temperature"
 msgctxt "STRINGS.UI.SMARTCHILLER.TOOLTIP"
 msgid "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through."
 msgstr "The temperature this chiller cools liquid down to. Liquid that is already at or below it passes straight through."
+
+msgctxt "STRINGS.ELEMENTS.TEA.NAME"
+msgid "Tea"
+msgstr "Tea"
+
+msgctxt "STRINGS.ELEMENTS.TEA.DESC"
+msgid "A warm cup of tea brewed from Balm Lily Flower, water, Brackene and Coffee Beans."
+msgstr "A warm cup of tea brewed from Balm Lily Flower, water, Brackene and Coffee Beans."
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKTEA.NAME"
+msgid "Drank Tea"
+msgstr "Drank Tea"
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKTEA.TOOLTIP"
+msgid "A warm welcome in a cup, enough to stir a Duplicant's passion."
+msgstr "A warm welcome in a cup, enough to stir a Duplicant's passion!"

@@ -24,6 +24,13 @@ namespace RingCloudTech
                 public static LocString DESC =
                     "通过咖啡豆冲泡的黑咖啡，与浓缩咖啡不同，他的味道绝对算不上好的\n但是复制人饮用后就不用睡觉了，如果能处理后黑咖啡带来的压力，他将是个不错的消遣液体";
             }
+
+            public static class TEA
+            {
+                public static LocString NAME = "Tea";
+                public static LocString DESC =
+                    "A warm cup of tea brewed from Balm Lily Flower, water, Brackene and Coffee Beans.";
+            }
         }
 
         public static class BUILDINGS
@@ -138,6 +145,13 @@ namespace RingCloudTech
                     public static LocString NAME = "Drank Cola";
                     public static LocString TOOLTIP =
                         "A chilled glass of Cola. Stress melts away, spirits lift.";
+                }
+
+                public static class DUPLICANTDRANKTEA
+                {
+                    public static LocString NAME = "Drank Tea";
+                    public static LocString TOOLTIP =
+                        "A warm welcome in a cup, enough to stir a Duplicant's passion.";
                 }
             }
         }

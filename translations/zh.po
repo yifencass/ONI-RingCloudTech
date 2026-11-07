@@ -234,3 +234,19 @@ msgstr "液氦泉"
 msgctxt "STRINGS.CREATURES.SPECIES.GEYSER.LIQUID_HELIUM.DESC"
 msgid "A fissure weeping liquid helium a few degrees above absolute zero. It flashes to gas the moment it touches anything warmer, devouring heat along the way - and feeding machines with a taste for helium."
 msgstr "一道渗出液氦的裂隙，温度只比绝对零度高几度。液氦一碰到稍暖的东西就立刻汽化，途中吞掉大量热量——顺带喂饱那些爱吃氦气的机器。"
+
+msgctxt "STRINGS.ELEMENTS.TEA.NAME"
+msgid "Tea"
+msgstr "茶"
+
+msgctxt "STRINGS.ELEMENTS.TEA.DESC"
+msgid "A warm cup of tea brewed from Balm Lily Flower, water, Brackene and Coffee Beans."
+msgstr "由芳香百合花、水、咸乳与咖啡豆调配而成的棕色饮品。"
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKTEA.NAME"
+msgid "Drank Tea"
+msgstr "喝了茶"
+
+msgctxt "STRINGS.DUPLICANTS.MODIFIERS.DUPLICANTDRANKTEA.TOOLTIP"
+msgid "A warm welcome in a cup, enough to stir a Duplicant's passion."
+msgstr "一杯茶带来的盛情款待可以激起复制人的热情！"
