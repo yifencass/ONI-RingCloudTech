@@ -70,9 +70,18 @@ namespace RingCloudTech
                 consumer.wrongElementResult = ConduitConsumer.WrongElementResult.Dump;
                 consumer.forceAlwaysSatisfied = true; // 没接管道时不干扰原版工作判定
 
+                // ConduitConsumer.Consume() 里有一句
+                //   if (!alwaysConsume && !operational.MeetsRequirements(OperatingRequirement)) return;
+                // 而 OperatingRequirement 默认是 Operational.State（要求 IsOperational）。
+                // 研究台的 Operational 把 ResearchSelectedFlag 当 Requirement，只有「选了研究、
+                // 且该研究还需要高级点数」时才为真 —— 所以只有研究时才会进水。
+                // 设为 alwaysConsume 后，只要管道有水、Storage 还有空间就灌，
+                // 平时也能把 750 kg 缓冲补满，不用等开工。
+                consumer.alwaysConsume = true;
+
                 // ManualDeliveryKG 刻意保留：管道把库存维持在 750 kg 时不会低于
                 // refillMass(150 kg)，小人不会再被派去搬水；没接管道时它仍是后备。
-                Debug.Log("[RingCloudTech] 高级研究台已接入 ConduitConsumer");
+                Debug.Log("[RingCloudTech] 高级研究台已接入 ConduitConsumer（alwaysConsume=开，平时也补水）");
             }
             catch (Exception e)
             {

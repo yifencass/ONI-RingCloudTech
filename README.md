@@ -1,4 +1,4 @@
-﻿# ONI-RingCloudTech
+# ONI-RingCloudTech
 
 在《缺氧》(Oxygen Not Included) 上的「环云科技」模组。
 
@@ -73,6 +73,7 @@
   - 同时放开原版 `Helium` / `LiquidHelium` 的 `disabled` 标记，让它们能出现在元素过滤器与数据库中
 - **高级研究台液体输入口** —— 给原版 3×3 `AdvancedResearchCenter` 打的补丁：
   - 底排中间 `(0, 0)` 增加一个液体管道输入口，接上水管即可自动供水，免去小人搬水
+  - **平时也持续补水**：研究台的 `Operational` 只在「已选研究且还需要高级点数」时才成立，原版 `ConduitConsumer` 会因此只在研究时抽水；补丁把 `alwaysConsume` 打开，管道有水就灌，随时把 750 kg 缓冲补满
   - 与电力输入口同格（分属不同 `Grid.Objects` 层），刻意不挪电力口以免老存档断线
   - 保留原版 `ManualDeliveryKG` 作为未接管道时的后备
 - **鸿蒙之眼（Harmony Eye）** `[ALN联动建筑第一版]` —— 9×9 巨型装置，美术与机制参考 GTNH 的同名多方块：
