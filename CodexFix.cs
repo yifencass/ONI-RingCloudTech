@@ -186,7 +186,8 @@ namespace RingCloudTech
 
             GameObject plant = Assets.GetPrefab(plantPrefabId);
             Crop crop = plant?.GetComponent<Crop>();
-            if (crop == null || crop.cropVal.cropDuration <= 0f)
+            // U60 起 Crop.CropVal 由 struct 改成 class，允许为 null（原版 Crop.OnSpawn 也会检查）
+            if (crop == null || crop.cropVal == null || crop.cropVal.cropDuration <= 0f)
             {
                 return;
             }
@@ -197,7 +198,17 @@ namespace RingCloudTech
                 return;
             }
 
-            float perCycle = crop.cropVal.numProduced / crop.cropVal.cropDuration * 600f;
+            // U60：CropVal 不再有 numProduced 字段，产物改存 products 列表，这里按总产出求和
+            float producedPerHarvest = 0f;
+            if (crop.cropVal.products != null)
+            {
+                foreach (Crop.CropVal.ProductInfo productInfo in crop.cropVal.products)
+                {
+                    producedPerHarvest += productInfo.quantity;
+                }
+            }
+
+            float perCycle = producedPerHarvest / crop.cropVal.cropDuration * 600f;
             List<ICodexWidget> widgets = new List<ICodexWidget>
             {
                 new CodexLargeSpacer(),

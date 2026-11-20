@@ -129,8 +129,8 @@ namespace RingCloudTech
             BeanInfo.Name = STRINGS.ITEMS.FOOD.COFFEEBEAN.NAME;
             BeanInfo.Description = STRINGS.ITEMS.FOOD.COFFEEBEAN.DESC;
 
-            // 注册作物。CropVal 是 struct，用 Exists 而不是 Find(...) == null
-            if (!CROPS.CROP_TYPES.Exists(m => m.cropId == BEAN_ID))
+            // 注册作物。U60 起 CropVal 是 class、产物改成 products 列表；用 Exists 而不是 Find(...) == null
+            if (!CROPS.CROP_TYPES.Exists(m => m.products != null && m.products.Exists(p => p.cropId == BEAN_ID)))
             {
                 CROPS.CROP_TYPES.Add(new Crop.CropVal(BEAN_ID, CROP_DURATION, YIELD_UNITS));
             }
