@@ -21,7 +21,9 @@ namespace RingCloudTech
 
         public override void OnLoad(Harmony harmony)
         {
-            base.OnLoad(harmony);
+            // 不走 base.OnLoad（= harmony.PatchAll）：一个补丁类失配会让 KMod 把整个 mod 禁用。
+            // U60 就因为 ResearchCenter.GetDescriptors 被改名成 CollectDescriptors 炸过一次。
+            HarmonyBootstrap.PatchAllTolerant(harmony, assembly);
 
             // 鸿蒙之眼「产品滞留」状态条目文案。
             // 用 (key, 文本) 重载：单参 LocString 重载只填一种语言的槽位，

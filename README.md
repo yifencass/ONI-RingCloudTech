@@ -227,6 +227,7 @@ dotnet build -c Release -p:ManagedPath="<游戏安装目录>\OxygenNotIncluded_D
 | 文件 | 说明 |
 |---|---|
 | `RingCloudTech.cs` | 入口 + 自定义液体 / 效果 / 饮水机相关 Harmony 补丁 |
+| `HarmonyBootstrap.cs` | 容错打补丁：逐个补丁类 try/catch，避免单个补丁失配拖垮整个模组 |
 | `BeverageMixerConfig.cs` | 饮料调配机建筑定义与配方 |
 | `CoffeeTreeRegistrar.cs` | 咖啡树的物品 / 食物 / 作物定义与注册 |
 | `CoffeeTreePlantConfig.cs` | 咖啡树植物本体 |
@@ -307,6 +308,20 @@ kanim 名 = 目录名 + `_kanim`。
 
 > 这些贴图与 `harmonyeye.png` 在生成脚本里由同一份参数产出，
 > 改尺寸时两边要一起重新导出。
+
+## 游戏版本兼容（U60 起）
+
+**U60（`Build 764025`）改动过一批内部 API，旧版本 DLL 会直接加载失败**。本模组从 `v1.1.1` 起把打补丁的方式改成了「容错挂载」：
+
+- 入口不再调用 `harmony.PatchAll(assembly)`，而是走 `HarmonyBootstrap.PatchAllTolerant`，逐个补丁类 `try/catch`；
+- 某个补丁类的目标方法在新版游戏里被改名/删除时，**只跳过这一个补丁**，其余功能照常加载，日志会打印：
+  ```
+  [RingCloudTech] 补丁部分挂载：成功 44 个，跳过 1 个（游戏更新改了目标方法，跳过不影响其它功能）
+  [RingCloudTech]   跳过补丁类 XxxPatch：Undefined target method ...
+  ```
+- 已经跟进的一处：U60 把 `ResearchCenter.GetDescriptors` 改成了 `CollectDescriptors`，补丁已同步改名（`ResearchCenter_CollectDescriptors_Safe`）。
+
+> 在此之前的行为是：任何一个补丁目标失配 → `Harmony.PatchAll` 抛异常 → 游戏判定模组加载失败并**自动禁用整个模组**。这就是 `v1.1.0` 在 U60 上「更新后无法使用」的原因。
 
 ## 多语言
 

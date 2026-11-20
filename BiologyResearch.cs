@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using HarmonyLib;
 using Klei.AI;
 using STRINGS;
@@ -369,17 +369,32 @@ namespace RingCloudTech
     }
 
     /// <summary>
-    /// 兜底：数据库生成（CodexCacheInit）会在 Research 还没就绪时调 ResearchCenter.GetDescriptors，
+    /// 兜底：数据库生成（CodexCacheInit）会在 Research 还没就绪时调 ResearchCenter.CollectDescriptors，
     /// 原版直接 Research.Instance.researchTypes.GetResearchType(id).name 会空引用炸掉整个游戏。
+    ///
+    /// U60 把原来的 GetDescriptors(go, ref List&lt;Descriptor&gt;) 改成了
+    /// Workable 覆写 CollectDescriptors(go, List&lt;Descriptor&gt;)：没有返回值，
+    /// 描述由方法自己往传进来的 list 里塞。所以这里改成 Prefix 往 list 里补描述、
+    /// 必要时返回 false 跳过原版逻辑。
     /// </summary>
-        [HarmonyPatch(typeof(ResearchCenter), "GetDescriptors")]
-    public static class ResearchCenter_GetDescriptors_Safe
+    [HarmonyPatch(typeof(ResearchCenter), "CollectDescriptors")]
+    public static class ResearchCenter_CollectDescriptors_Safe
     {
-        public static bool Prefix(GameObject go, ref System.Collections.Generic.List<Descriptor> __result)
+        public static bool Prefix(GameObject go, System.Collections.Generic.List<Descriptor> descriptors)
         {
-            Research research = Research.Instance;
-            if (research != null && research.researchTypes != null)
+            try
             {
+                Research research = Research.Instance;
+                if (research == null || research.researchTypes == null)
+                {
+                    if (descriptors != null)
+                    {
+                        descriptors.Add(new Descriptor("消耗藻类换取生物学研究点数", "研究生命的运转方式。", Descriptor.DescriptorType.Requirement));
+                    }
+
+                    return false;
+                }
+
                 // 研究台的方向研究类型必须真的存在，否则原版那句
                 // researchTypes.GetResearchType(id).name 会空引用。
                 ResearchCenter center = go != null ? go.GetComponent<ResearchCenter>() : null;
@@ -390,26 +405,18 @@ namespace RingCloudTech
                     return true;
                 }
 
-                __result = new System.Collections.Generic.List<Descriptor>
+                if (descriptors != null)
                 {
-                    new Descriptor("研究台的研究类型未注册，已停用。", "研究类型缺失。", Descriptor.DescriptorType.Requirement)
-                };
-                return false;
-            }
+                    descriptors.Add(new Descriptor("研究台的研究类型未注册，已停用。", "研究类型缺失。", Descriptor.DescriptorType.Requirement));
+                }
 
-            try
-            {
-                var list = new System.Collections.Generic.List<Descriptor>();
-                list.Add(new Descriptor("消耗藻类换取生物学研究点数", "研究生命的运转方式。", Descriptor.DescriptorType.Requirement));
-                __result = list;
+                return false;
             }
             catch (System.Exception e)
             {
                 Debug.LogWarning("[RingCloudTech] 研究台描述兜底失败: " + e.Message);
-                __result = new System.Collections.Generic.List<Descriptor>();
+                return true;
             }
-
-            return false;
         }
 
         internal static bool HasResearchTypePublic(ResearchTypes types, string id)
@@ -459,7 +466,7 @@ namespace RingCloudTech
                 List<string> dangling = null;
                 foreach (string key in tech.costsByResearchTypeID.Keys)
                 {
-                    if (!ResearchCenter_GetDescriptors_Safe.HasResearchTypePublic(research.researchTypes, key))
+                    if (!ResearchCenter_CollectDescriptors_Safe.HasResearchTypePublic(research.researchTypes, key))
                     {
                         if (dangling == null)
                         {
